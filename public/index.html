@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar · CV Matcher</title>
+  <meta name="color-scheme" content="light dark">
+  <script src="js/theme-init.js"></script>
+  <link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/instrument-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/auth.js"></script>
+</head>
+<body>
+  <main class="auth">
+    <section class="auth-hero">
+      <a class="brand" href="/index.html" style="padding:0;color:#fff" aria-label="CV Matcher">
+        <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="5.5" y="3.5" width="21" height="25" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="9" y="10" width="14" height="6" rx="2" fill="#ffe14a"/>
+          <path d="M10 7.5h7M10 20.5h12M10 24h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-name">CV Matcher</span>
+      </a>
+
+      <div>
+        <h1>Pega una oferta. Mira qué le falta a tu CV.</h1>
+        <p class="lede">Guarda varias versiones de tu currículum, importa el que ya tienes desde PDF o Word y compáralo con cada oferta en segundos.</p>
+      </div>
+
+      <div class="hero-demo" id="heroDemo" aria-hidden="true">
+        <span class="example-tag">Ejemplo</span>
+        <p>Buscamos desarrollador/a junior con <mark class="mk mk-ok" style="--i:0">Python</mark>, <mark class="mk mk-ok" style="--i:1">Odoo</mark> y <mark class="mk mk-ok" style="--i:2">MySQL</mark>. Se valorará <mark class="mk mk-miss">Docker</mark> y buen nivel de <mark class="mk mk-miss">inglés</mark>.</p>
+        <div class="hero-score"><strong id="heroNum">0%</strong><span>de compatibilidad con tu CV</span></div>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <button type="button" class="icon-btn auth-top" data-theme-toggle><span data-theme-icon></span></button>
+
+      <div class="auth-box">
+        <div>
+          <h2 id="authTitle">Entra en tu cuenta</h2>
+          <p class="lede" id="authLede">Tus CVs y tus candidaturas te esperan.</p>
+        </div>
+
+        <div class="seg" id="authTabs" role="tablist" aria-label="Acceso">
+          <button type="button" role="tab" id="tabLogin" aria-selected="true" aria-controls="authForm">Entrar</button>
+          <button type="button" role="tab" id="tabRegister" aria-selected="false" aria-controls="authForm">Crear cuenta</button>
+        </div>
+
+        <div id="sessionNotice" class="callout is-warn" role="status" hidden></div>
+
+        <form id="authForm" class="auth-form" role="tabpanel">
+          <div class="field">
+            <label class="label" for="email">Correo electrónico</label>
+            <input class="input" id="email" type="email" required autocomplete="email" inputmode="email" autofocus>
+          </div>
+          <div class="field" id="passwordField">
+            <label class="label" for="password">Contraseña</label>
+            <div class="pw-field">
+              <input class="input" id="password" type="password" required autocomplete="current-password">
+              <button type="button" class="icon-btn" id="togglePw" aria-label="Mostrar contraseña"></button>
+            </div>
+            <p class="hint" id="pwHint" hidden>Mínimo 8 caracteres.</p>
+          </div>
+
+          <p id="errorMessage" class="callout is-error" role="alert" hidden></p>
+
+          <p id="authOk" class="callout is-ok" role="status" hidden></p>
+
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-block"><span>Entrar</span></button>
+          <button type="button" id="forgotLink" class="link-btn">¿Has olvidado tu contraseña?</button>
+          <button type="button" id="backLink" class="link-btn" hidden>← Volver a entrar</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

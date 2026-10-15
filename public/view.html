@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Candidatura · CV Matcher</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <script src="js/theme-init.js"></script>
+  <link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/instrument-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/public.js"></script>
+</head>
+<body>
+  <main class="public">
+    <div class="public-bar">
+      <a class="brand" href="/index.html" style="padding:0" aria-label="CV Matcher">
+        <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="5.5" y="3.5" width="21" height="25" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="9" y="10" width="14" height="6" rx="2" fill="#ffe14a"/>
+          <path d="M10 7.5h7M10 20.5h12M10 24h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-name">CV Matcher</span>
+      </a>
+      <button type="button" class="icon-btn" data-theme-toggle><span data-theme-icon></span></button>
+    </div>
+
+    <div id="publicContent" aria-live="polite">
+      <div class="sheet public-head">
+        <div class="skel" style="height:18px;width:30%"></div>
+        <div class="skel" style="height:40px;width:70%"></div>
+        <div class="skel" style="height:90px;width:40%"></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

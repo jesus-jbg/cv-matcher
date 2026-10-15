@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CV Matcher</title>
+  <meta name="color-scheme" content="light dark">
+  <script src="js/theme-init.js"></script>
+  <link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/instrument-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <div class="app">
+    <!-- Menú lateral (escritorio) -->
+    <aside class="rail">
+      <a class="brand" href="#cvs" aria-label="CV Matcher, ir a Mis CVs">
+        <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="5.5" y="3.5" width="21" height="25" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="9" y="10" width="14" height="6" rx="2" fill="#ffe14a"/>
+          <path d="M10 7.5h7M10 20.5h12M10 24h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-name">CV Matcher</span>
+      </a>
+
+      <nav class="nav" aria-label="Secciones">
+        <a class="nav-item" href="#cvs" data-nav="cvs"><i data-icon="file"></i><span>Mis CVs</span></a>
+        <a class="nav-item" href="#analizar" data-nav="analizar"><i data-icon="target"></i><span>Analizar oferta</span></a>
+        <a class="nav-item" href="#candidaturas" data-nav="candidaturas"><i data-icon="briefcase"></i><span>Candidaturas</span><span class="nav-count" id="jobsCount" hidden></span></a>
+      </nav>
+
+      <div class="rail-foot">
+        <button type="button" class="rail-btn" data-theme-toggle><span data-theme-icon></span><span data-theme-label>Modo oscuro</span></button>
+        <p class="account" id="accountEmail"></p>
+        <button type="button" class="rail-btn" data-logout><i data-icon="logout"></i><span>Cerrar sesión</span></button>
+      </div>
+    </aside>
+
+    <div class="content">
+      <!-- Barra superior (móvil) -->
+      <header class="topbar">
+        <a class="brand" href="#cvs" aria-label="CV Matcher">
+          <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="5.5" y="3.5" width="21" height="25" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <rect x="9" y="10" width="14" height="6" rx="2" fill="#ffe14a"/>
+            <path d="M10 7.5h7M10 20.5h12M10 24h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-name">CV Matcher</span>
+        </a>
+        <div class="topbar-tools">
+          <button type="button" class="icon-btn" data-theme-toggle><span data-theme-icon></span></button>
+          <button type="button" class="icon-btn" data-logout aria-label="Cerrar sesión"><i data-icon="logout"></i></button>
+        </div>
+      </header>
+
+      <main id="main" class="main">
+
+        <!-- ===================== MIS CVS ===================== -->
+        <div class="page" data-view="cvs">
+          <div class="page-head">
+            <div>
+              <h1>Mis CVs</h1>
+              <p>Guarda una versión para cada tipo de oferta. Si ya tienes un CV en PDF o Word, impórtalo y se rellena solo.</p>
+            </div>
+            <div class="page-actions">
+              <button type="button" class="btn btn-secondary" id="importCvBtn"><i data-icon="upload"></i>Importar CV</button>
+              <button type="button" class="btn btn-primary" id="newCvBtn"><i data-icon="plus"></i>Nuevo CV</button>
+            </div>
+          </div>
+
+          <input type="file" id="importCvInput" hidden accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain">
+          <div id="importStatus" class="callout" role="status" hidden></div>
+
+          <ul id="cvListContainer" class="shelf" aria-label="Tus CVs"></ul>
+
+          <div class="editor-layout">
+            <form id="cvForm" class="editor" autocomplete="off">
+              <input type="hidden" id="currentCvId" value="">
+
+              <section class="block" aria-label="Nombre del CV">
+                <div class="title-row">
+                  <input class="title-input" id="cvTitle" type="text" placeholder="Nombre de este CV" aria-label="Nombre de este CV" maxlength="120" required>
+                  <label class="switch"><input type="checkbox" id="isDefaultCv"><span>CV preferente</span></label>
+                </div>
+                <p class="hint">El CV preferente es el que se usa por defecto al analizar una oferta.</p>
+              </section>
+
+              <section class="block">
+                <div class="block-head"><h2>Plantilla</h2></div>
+                <div class="template-picker" role="radiogroup" aria-label="Plantilla del CV">
+                  <label class="tpl tpl-modern">
+                    <input type="radio" name="template" value="modern" checked>
+                    <span class="tpl-thumb"><i class="tpl-thumb-head"></i><i class="tpl-rule"></i><b></b><i></i><b></b></span>
+                    <span class="tpl-name">Moderno</span>
+                  </label>
+                  <label class="tpl tpl-classic">
+                    <input type="radio" name="template" value="classic">
+                    <span class="tpl-thumb"><i class="tpl-thumb-head"></i><i class="tpl-rule"></i><b></b><i></i><b></b></span>
+                    <span class="tpl-name">Clásico</span>
+                  </label>
+                  <label class="tpl tpl-minimal">
+                    <input type="radio" name="template" value="minimal">
+                    <span class="tpl-thumb"><i class="tpl-thumb-head"></i><i class="tpl-rule"></i><b></b><i></i><b></b></span>
+                    <span class="tpl-name">Minimalista</span>
+                  </label>
+                  <label class="tpl tpl-sidebar">
+                    <input type="radio" name="template" value="sidebar">
+                    <span class="tpl-thumb"><i class="tpl-side"></i><span class="tpl-main"><i class="tpl-thumb-head"></i><b></b><i></i><b></b></span></span>
+                    <span class="tpl-name">Lateral</span>
+                  </label>
+                  <label class="tpl tpl-executive">
+                    <input type="radio" name="template" value="executive">
+                    <span class="tpl-thumb"><i class="tpl-thumb-head"></i><span class="tpl-cols"><i></i><b></b></span><span class="tpl-cols"><i></i><b></b></span><span class="tpl-cols"><i></i><b></b></span></span>
+                    <span class="tpl-name">Ejecutivo</span>
+                  </label>
+                  <label class="tpl tpl-creative">
+                    <input type="radio" name="template" value="creative">
+                    <span class="tpl-thumb"><i class="tpl-thumb-head"></i><i></i><b></b><i></i></span>
+                    <span class="tpl-name">Creativo</span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="block">
+                <div class="block-head"><h2>Datos personales</h2></div>
+                <div class="photo-field">
+                  <div class="avatar">
+                    <span id="avatarEmpty"><i data-icon="user"></i></span>
+                    <img id="photoPreview" alt="Foto del CV" hidden>
+                  </div>
+                  <div class="photo-actions">
+                    <div class="photo-buttons">
+                      <button type="button" class="btn btn-secondary btn-sm" id="photoBtn"><i data-icon="upload"></i>Subir foto</button>
+                      <button type="button" class="btn btn-ghost btn-sm" id="photoRemoveBtn" hidden>Quitar foto</button>
+                    </div>
+                    <p class="hint">Opcional. Se reduce sola a 400 px para que el CV pese poco.</p>
+                    <input type="file" id="photoInput" accept="image/*" hidden>
+                  </div>
+                </div>
+                <div class="grid-2">
+                  <label class="field span-2"><span>Nombre completo</span><input class="input" id="fullName" type="text" required maxlength="120"></label>
+                  <label class="field"><span>Correo electrónico</span><input class="input" id="cvEmail" type="email" required maxlength="120"></label>
+                  <label class="field"><span>Teléfono</span><input class="input" id="phone" type="tel" maxlength="40"></label>
+                  <label class="field span-2"><span>Resumen profesional</span><textarea class="textarea" id="summary" rows="4" placeholder="Dos o tres frases sobre lo que sabes hacer y lo que buscas."></textarea></label>
+                </div>
+              </section>
+
+              <section class="block">
+                <div class="block-head">
+                  <h2>Experiencia</h2>
+                  <button type="button" class="btn btn-secondary btn-sm" id="addExperienceBtn"><i data-icon="plus"></i>Añadir</button>
+                </div>
+                <ul id="experienceContainer" class="entries"></ul>
+                <p class="empty-hint" id="experienceEmpty">Aún no has añadido experiencia. Las prácticas también cuentan.</p>
+              </section>
+
+              <section class="block">
+                <div class="block-head">
+                  <h2>Formación</h2>
+                  <button type="button" class="btn btn-secondary btn-sm" id="addEducationBtn"><i data-icon="plus"></i>Añadir</button>
+                </div>
+                <ul id="educationContainer" class="entries"></ul>
+                <p class="empty-hint" id="educationEmpty">Aún no has añadido estudios.</p>
+              </section>
+
+              <section class="block">
+                <div class="block-head">
+                  <div>
+                    <h2>Habilidades</h2>
+                    <p>Pulsa los puntos de una habilidad para cambiar su nivel.</p>
+                  </div>
+                </div>
+                <ul id="skillContainer" class="chips" aria-label="Habilidades añadidas"></ul>
+                <div class="field skill-add">
+                  <label class="sr-only" for="skillInput">Añadir habilidad</label>
+                  <input class="input" id="skillInput" type="text" maxlength="200" placeholder="Escribe una habilidad y pulsa Intro. También puedes pegar una lista separada por comas.">
+                </div>
+              </section>
+
+              <div class="action-bar">
+                <p class="save-state" id="saveState" role="status"><span class="save-dot"></span><span id="saveStateText">Todo guardado</span></p>
+                <button type="button" class="btn btn-ghost btn-sm preview-toggle" id="previewToggle"><i data-icon="eye"></i>Vista previa</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="downloadWordBtn"><i data-icon="download"></i>Word</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="downloadPdfBtn"><i data-icon="download"></i>PDF</button>
+                <button type="submit" class="btn btn-primary" id="saveCvBtn" title="Guardar (Ctrl+S)"><i data-icon="check"></i><span>Guardar CV</span></button>
+              </div>
+            </form>
+
+            <aside class="preview" id="previewPane" aria-label="Vista previa del CV">
+              <div class="preview-head">
+                <div>
+                  <h2>Vista previa</h2>
+                  <p>Se actualiza mientras escribes.</p>
+                </div>
+                <button type="button" class="icon-btn preview-close" id="previewClose" aria-label="Cerrar vista previa"><i data-icon="x"></i></button>
+              </div>
+              <div class="preview-stage" id="previewStage">
+                <div class="paper-wrap" id="previewWrap"><div class="paper" id="previewPaper"></div></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- ===================== ANALIZAR OFERTA ===================== -->
+        <div class="page" data-view="analizar" hidden>
+          <div class="page-head">
+            <div>
+              <h1>Analizar una oferta</h1>
+              <p>Pega los requisitos y verás qué palabras de la oferta aparecen en tu CV y cuáles no.</p>
+            </div>
+          </div>
+
+          <div class="match-layout">
+            <form id="jobForm" class="sheet match-form" autocomplete="off">
+              <div class="field">
+                <label class="label" for="matchCvSelector">CV con el que comparar</label>
+                <select class="select" id="matchCvSelector"><option value="">CV preferente (automático)</option></select>
+                <p class="hint" id="matchCvHint" hidden>Aún no tienes CVs. <a href="#cvs">Crea o importa uno</a> para poder compararlo.</p>
+              </div>
+              <div class="grid-2">
+                <label class="field"><span>Empresa</span><input class="input" id="companyName" type="text" required maxlength="120"></label>
+                <label class="field"><span>Puesto</span><input class="input" id="jobTitle" type="text" required maxlength="120"></label>
+              </div>
+              <div class="field">
+                <div class="field-row">
+                  <label class="label" for="jobDescription">Oferta</label>
+                  <button type="button" class="btn btn-ghost btn-sm" id="pasteBtn"><i data-icon="clipboard"></i>Pegar</button>
+                </div>
+                <textarea class="textarea" id="jobDescription" rows="10" required placeholder="Pega aquí los requisitos y las funciones del puesto."></textarea>
+                <p class="hint" id="jobCounter">Ctrl+Intro para analizar</p>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block" id="analyzeBtn"><i data-icon="target"></i><span>Analizar oferta</span></button>
+              <p class="hint">Cada análisis se guarda en Candidaturas.</p>
+            </form>
+
+            <section class="result" id="matchResult" aria-live="polite" aria-label="Resultado del análisis"></section>
+          </div>
+        </div>
+
+        <!-- ===================== CANDIDATURAS ===================== -->
+        <div class="page" data-view="candidaturas" hidden>
+          <div class="page-head">
+            <div>
+              <h1>Candidaturas</h1>
+              <p id="jobsLede">Las ofertas que has analizado, con su compatibilidad.</p>
+            </div>
+          </div>
+
+          <div class="toolbar" id="jobsToolbar">
+            <label class="search">
+              <span class="sr-only">Buscar candidaturas</span>
+              <i data-icon="search"></i>
+              <input class="input" id="jobSearch" type="search" placeholder="Buscar por puesto o empresa">
+            </label>
+            <label>
+              <span class="sr-only">Ordenar candidaturas</span>
+              <select class="select" id="jobSort">
+                <option value="recent">Más recientes</option>
+                <option value="match">Mayor compatibilidad</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="jobsList"></div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Navegación inferior (móvil) -->
+  <nav class="tabbar" aria-label="Secciones">
+    <a class="tab-item" href="#cvs" data-nav="cvs"><i data-icon="file"></i><span>Mis CVs</span></a>
+    <a class="tab-item" href="#analizar" data-nav="analizar"><i data-icon="target"></i><span>Analizar</span></a>
+    <a class="tab-item" href="#candidaturas" data-nav="candidaturas"><i data-icon="briefcase"></i><span>Candidaturas</span></a>
+  </nav>
+
+  <!-- Aviso al arrastrar un archivo sobre la página -->
+  <div class="drop-overlay" id="dropOverlay" hidden>
+    <div class="drop-card">
+      <i data-icon="upload"></i>
+      <h2>Suelta tu CV para importarlo</h2>
+      <p>PDF, Word (.docx) o texto · hasta 5 MB</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nueva contraseña · CV Matcher</title>
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <script src="js/theme-init.js"></script>
+  <link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/instrument-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/reset.js"></script>
+</head>
+<body>
+  <main class="auth" style="grid-template-columns:minmax(0,1fr)">
+    <section class="auth-panel">
+      <button type="button" class="icon-btn auth-top" data-theme-toggle><span data-theme-icon></span></button>
+      <div class="auth-box">
+        <div>
+          <h2>Crea una contraseña nueva</h2>
+          <p class="lede">Elige una contraseña de al menos 8 caracteres.</p>
+        </div>
+
+        <form id="resetForm" class="auth-form">
+          <div class="field">
+            <label class="label" for="newPassword">Contraseña nueva</label>
+            <div class="pw-field">
+              <input class="input" id="newPassword" type="password" required minlength="8" autocomplete="new-password" autofocus>
+              <button type="button" class="icon-btn" id="togglePw" aria-label="Mostrar contraseña"></button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="newPassword2">Repite la contraseña</label>
+            <input class="input" id="newPassword2" type="password" required minlength="8" autocomplete="new-password">
+          </div>
+
+          <p id="errorMessage" class="callout is-error" role="alert" hidden></p>
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-block"><span>Guardar contraseña</span></button>
+        </form>
+
+        <div id="doneBox" hidden>
+          <p class="callout is-ok" role="status">Contraseña actualizada. Ya puedes entrar con la nueva.</p>
+          <a class="btn btn-primary btn-block" style="margin-top:16px" href="/index.html"><span>Ir a entrar</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
