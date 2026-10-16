@@ -1,7 +1,7 @@
 // Pantalla "Candidaturas": lista de ofertas analizadas con búsqueda y orden.
 import { api } from './api.js';
 import { state, on } from './store.js';
-import { $, escapeHtml, icon, toast, formatRelative, copyText, debounce } from './ui.js';
+import { $, escapeHtml, icon, toast, formatRelative, copyText, debounce, confirmDialog } from './ui.js';
 import { onShow, navigate } from './router.js';
 
 let loaded = false;
@@ -31,6 +31,7 @@ function rowHtml(j) {
     <div class="job-actions">
       <button type="button" class="icon-btn" data-copy="${escapeHtml(j.slug)}" aria-label="Copiar enlace público de ${escapeHtml(j.job_title)}" title="Copiar enlace público">${icon('link')}</button>
       <a class="icon-btn" href="${escapeHtml(publicUrl(j.slug))}" target="_blank" rel="noopener" aria-label="Abrir página pública de ${escapeHtml(j.job_title)}" title="Abrir página pública">${icon('external')}</a>
+      <button type="button" class="icon-btn is-danger" data-delete="${escapeHtml(String(j.id))}" aria-label="Eliminar la candidatura ${escapeHtml(j.job_title)}" title="Eliminar candidatura">${icon('trash')}</button>
     </div>
   </article>`;
 }
@@ -67,6 +68,30 @@ function render() {
     : `<div class="empty-state"><h2>Sin resultados</h2><p>Ninguna candidatura coincide con «${escapeHtml(q)}».</p></div>`;
 }
 
+async function deleteJob(btn) {
+  const id = btn.dataset.delete;
+  const job = state.jobs.find(x => String(x.id) === id);
+  if (!job) return;
+  const ok = await confirmDialog({
+    title: 'Eliminar candidatura',
+    message: `Se borrará «${job.job_title}» de ${job.company_name} y su enlace público dejará de funcionar. No se puede deshacer.`,
+    confirmText: 'Eliminar',
+    tone: 'danger'
+  });
+  if (!ok) return;
+  btn.disabled = true;
+  try {
+    await api(`/api/jobs/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    state.jobs = state.jobs.filter(x => String(x.id) !== id);
+    paintBadge();
+    render();
+    toast('Candidatura eliminada', { type: 'ok' });
+  } catch (err) {
+    btn.disabled = false;
+    toast(err.message, { type: 'error' });
+  }
+}
+
 export async function loadJobs() {
   try {
     state.jobs = await api('/api/jobs');
@@ -86,6 +111,8 @@ export function initJobs() {
   $('#jobSearch').addEventListener('input', debounce(render, 120));
   $('#jobSort').addEventListener('change', render);
   $('#jobsList').addEventListener('click', async e => {
+    const del = e.target.closest('[data-delete]');
+    if (del) return deleteJob(del);
     const btn = e.target.closest('[data-copy]');
     if (!btn) return;
     const ok = await copyText(publicUrl(btn.dataset.copy));

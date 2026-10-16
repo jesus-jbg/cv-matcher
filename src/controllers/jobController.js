@@ -89,3 +89,24 @@ exports.getApplicationBySlug = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// 4. Borrar una candidatura (solo si es del usuario que la pide)
+exports.deleteApplication = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'Identificador no válido' });
+  }
+  try {
+    const [result] = await db.query(
+      'DELETE FROM job_applications WHERE id = ? AND user_id = ?',
+      [id, req.user.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Candidatura no encontrada' });
+    }
+    res.json({ message: 'Candidatura eliminada' });
+  } catch (err) {
+    console.error('Error al borrar candidatura:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
