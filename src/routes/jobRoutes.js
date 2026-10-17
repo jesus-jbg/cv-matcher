@@ -10,6 +10,7 @@ router.get('/public/:slug', jobController.getApplicationBySlug);
 router.use(authMiddleware);
 router.post('/', jobController.createApplication);
 router.get('/', jobController.getApplications);
+router.post('/:id/skills', jobController.addSkillToApplication);
 router.delete('/:id', jobController.deleteApplication);
 
 module.exports = router;

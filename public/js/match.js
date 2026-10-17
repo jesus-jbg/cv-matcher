@@ -2,7 +2,7 @@
 import { api } from './api.js';
 import { state, on, emit, defaultCvId } from './store.js';
 import { $, $$, escapeHtml, icon, toast, setLoading, prefersReducedMotion } from './ui.js';
-import { addSkillToCv } from './cv.js';
+import { syncOpenCv } from './cv.js';
 
 const MIN_CHARS = 25;
 
@@ -103,19 +103,22 @@ function renderLoading() {
     </div>`;
 }
 
-function countUp(el, to) {
-  if (prefersReducedMotion() || to === 0) { el.textContent = String(to); return; }
+function countUp(el, to, from = 0) {
+  if (prefersReducedMotion() || to === from) { el.textContent = String(to); return; }
   const start = performance.now();
   const dur = 900;
   const tick = now => {
     const t = Math.min(1, (now - start) / dur);
-    el.textContent = String(Math.round(to * (1 - Math.pow(1 - t, 3))));
+    el.textContent = String(Math.round(from + (to - from) * (1 - Math.pow(1 - t, 3))));
     if (t < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 }
 
-function renderResult(res, description, cvId) {
+let current = null; // último análisis mostrado: { res, description, cvId }
+
+function renderResult(res, description, cvId, { from = 0, scroll = true } = {}) {
+  current = { res, description, cvId };
   const pct = Math.max(0, Math.min(100, Number(res.match_percentage) || 0));
   const matched = res.matched_keywords || [];
   const missing = res.missing_keywords || [];
@@ -134,7 +137,7 @@ function renderResult(res, description, cvId) {
         <div class="score" role="img" aria-label="${pct} por ciento de compatibilidad">
           <span class="score-num" data-score>0</span><span class="score-unit">%</span>
         </div>
-        <div class="score-track"><div class="score-fill" style="--p:${pct / 100}"></div></div>
+        <div class="score-track"><div class="score-fill" style="--p:${from / 100}" data-to="${pct / 100}"></div></div>
         ${hasKeys ? `
         <p class="score-level ${lv.cls}">${icon(lv.icon)}<span>${lv.label}</span></p>
         <p class="score-sentence">${lv.text}</p>` : `
@@ -174,10 +177,14 @@ function renderResult(res, description, cvId) {
       </footer>
     </article>`;
 
-  countUp($('[data-score]', root), pct);
+  countUp($('[data-score]', root), pct, from);
   const card = $('.result-card', root);
-  requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('is-drawn')));
-  card.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    card.classList.add('is-drawn');
+    const fill = $('.score-fill', card);
+    if (fill) fill.style.setProperty('--p', fill.dataset.to);
+  }));
+  if (scroll) card.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 
 /* ---------------------------------------------------------- eventos */
@@ -278,11 +285,22 @@ export function initMatch() {
       return;
     }
     const add = e.target.closest('[data-add]');
-    if (add) {
-      const cvId = $('.result-card', result).dataset.cvId;
+    if (add && current) {
       add.disabled = true;
-      const ok = await addSkillToCv(add.dataset.add, cvId);
-      if (ok === false) add.disabled = false;
+      const skill = add.dataset.add;
+      const before = Number(current.res.match_percentage) || 0;
+      try {
+        const upd = await api(`/api/jobs/${encodeURIComponent(current.res.id)}/skills`, { method: 'POST', body: { skill_name: skill } });
+        const merged = { ...current.res, ...upd };
+        syncOpenCv(upd.cv_id, skill);
+        emit('jobs:changed');
+        renderResult(merged, current.description, current.cvId, { from: before, scroll: false });
+        const after = Number(upd.match_percentage) || 0;
+        toast(`«${skill}» añadida a tu CV · compatibilidad ${before}% → ${after}%`, { type: 'ok' });
+      } catch (err) {
+        add.disabled = false;
+        toast(err.message, { type: 'error' });
+      }
     }
   });
 

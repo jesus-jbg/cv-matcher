@@ -594,6 +594,18 @@ export async function addSkillToCv(name, cvId) {
   return added;
 }
 
+// El análisis de ofertas ya guardó la habilidad en la base de datos. Si ese mismo CV está abierto
+// en el editor, se actualiza para que un «Guardar CV» posterior no la borre.
+export async function syncOpenCv(cvId, skillName) {
+  if (!cvId || String($('#currentCvId').value) !== String(cvId)) return;
+  if (!isDirty()) {
+    try { fillForm(await api(`/api/cv/${cvId}`)); } catch (_) { /* se recargará al abrirlo */ }
+    return;
+  }
+  addSkill(skillName, 'Intermedio'); // hay cambios sin guardar: se conservan y se suma la habilidad
+  refresh();
+}
+
 /* ================================================================ init */
 
 export async function initCvs() {
