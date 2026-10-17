@@ -52,6 +52,7 @@ exports.getCV = async (req, res) => {
 // o se guarda el CV entero o no se guarda nada)
 const MAX_PHOTO_CHARS = 3 * 1024 * 1024; // ~2,2 MB de imagen real en base64
 const PHOTO_RE = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/;
+const cleanNote = (t) => (typeof t === 'string' ? t.trim().slice(0, 1000) : '');
 const cleanDate = (d) => (typeof d === 'string' && d.trim() !== '' ? d.trim() : null);
 
 exports.saveCV = async (req, res) => {
@@ -105,18 +106,18 @@ exports.saveCV = async (req, res) => {
     await conn.query('DELETE FROM cv_experiences WHERE cv_id = ?', [targetCvId]);
     const expRows = (experiences || [])
       .filter(e => e.company && e.position)
-      .map(e => [targetCvId, e.company, e.position, cleanDate(e.start_date), cleanDate(e.end_date), e.is_current ? 1 : 0]);
+      .map(e => [targetCvId, e.company, e.position, cleanDate(e.start_date), cleanDate(e.end_date), e.is_current ? 1 : 0, cleanNote(e.description)]);
     if (expRows.length) {
-      await conn.query('INSERT INTO cv_experiences (cv_id, company, position, start_date, end_date, is_current) VALUES ?', [expRows]);
+      await conn.query('INSERT INTO cv_experiences (cv_id, company, position, start_date, end_date, is_current, description) VALUES ?', [expRows]);
     }
 
     // Educación
     await conn.query('DELETE FROM cv_education WHERE cv_id = ?', [targetCvId]);
     const eduRows = (education || [])
       .filter(e => e.institution && e.degree)
-      .map(e => [targetCvId, e.institution, e.degree, cleanDate(e.start_date), cleanDate(e.end_date), e.is_current ? 1 : 0]);
+      .map(e => [targetCvId, e.institution, e.degree, cleanDate(e.start_date), cleanDate(e.end_date), e.is_current ? 1 : 0, cleanNote(e.description)]);
     if (eduRows.length) {
-      await conn.query('INSERT INTO cv_education (cv_id, institution, degree, start_date, end_date, is_current) VALUES ?', [eduRows]);
+      await conn.query('INSERT INTO cv_education (cv_id, institution, degree, start_date, end_date, is_current, description) VALUES ?', [eduRows]);
     }
 
     // Habilidades

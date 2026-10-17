@@ -30,8 +30,9 @@ const keyOf = term => stem(fold(String(term)));
  * Devuelve el HTML de la oferta con <mark> en cada palabra clave y, de paso,
  * la forma original (con tildes) de cada término para mostrarla en las etiquetas.
  */
-function highlight(text, matched, missing) {
+function highlight(text, matched, missing, partial = []) {
   const okKeys = new Map(matched.map((t, i) => [keyOf(t), i]));
+  const lowKeys = new Map(partial.map((t, i) => [keyOf(t), i]));
   const missKeys = new Map(missing.map((t, i) => [keyOf(t), i]));
   const surface = new Map();
   const folded = fold(text);
@@ -42,7 +43,7 @@ function highlight(text, matched, missing) {
   let m;
   while ((m = TOKEN_RE.exec(folded))) {
     const key = stem(m[0]);
-    const kind = okKeys.has(key) ? 'ok' : missKeys.has(key) ? 'miss' : null;
+    const kind = okKeys.has(key) ? 'ok' : lowKeys.has(key) ? 'low' : missKeys.has(key) ? 'miss' : null;
     if (!kind) continue;
     const original = text.slice(m.index, m.index + m[0].length);
     if (!surface.has(key)) surface.set(key, original);
@@ -59,6 +60,24 @@ function levelOf(pct) {
   if (pct >= 70) return { cls: 'is-high', icon: 'check', label: 'Compatibilidad alta', text: 'Tu CV ya cubre la mayor parte de lo que piden. Revisa lo que falta y envíalo.' };
   if (pct >= 40) return { cls: 'is-mid', icon: 'info', label: 'Compatibilidad media', text: 'Hay base, pero faltan términos importantes. Si los tienes, añádelos a tu CV con las mismas palabras que usa la oferta.' };
   return { cls: 'is-low', icon: 'alert', label: 'Compatibilidad baja', text: 'Tu CV comparte pocas palabras con esta oferta. Puede que el puesto no encaje, o que tu CV no refleje todo lo que sabes.' };
+}
+
+function renderLevels(levels) {
+  const short = levels.filter(l => !l.ok).length;
+  return `
+      <section class="levels" aria-label="Niveles que pide la oferta">
+        <h3>Nivel que pide la oferta</h3>
+        <ul class="level-list">${levels.map(l => `
+          <li class="level-row ${l.ok ? 'is-ok' : 'is-short'}">
+            ${icon(l.ok ? 'check' : 'alert')}
+            <span class="level-skill">${escapeHtml(l.skill)}</span>
+            <span class="level-detail">Piden <strong>${escapeHtml(l.required.toLowerCase())}</strong> · tú: <strong>${escapeHtml(l.have.toLowerCase())}</strong></span>
+          </li>`).join('')}
+        </ul>
+        <p class="hint" style="margin-top:8px">${short
+          ? 'Si tu nivel real es mayor, súbelo en la habilidad de tu CV (pulsa el indicador de nivel) y vuelve a analizar. Las habilidades por debajo de lo que piden cuentan solo en parte.'
+          : 'Tu CV alcanza el nivel que piden en todas las habilidades que indican nivel.'}</p>
+      </section>`;
 }
 
 function renderEmpty() {
@@ -100,8 +119,10 @@ function renderResult(res, description, cvId) {
   const pct = Math.max(0, Math.min(100, Number(res.match_percentage) || 0));
   const matched = res.matched_keywords || [];
   const missing = res.missing_keywords || [];
+  const partial = res.partial_keywords || [];
+  const levels = res.skill_levels || [];
   const lv = levelOf(pct);
-  const { html, surface } = highlight(description, matched, missing);
+  const { html, surface } = highlight(description, matched, missing, partial);
   const label = term => escapeHtml(surface.get(keyOf(term)) || term);
   const hasKeys = Number(res.total_keywords) > 0;
 
@@ -124,10 +145,13 @@ function renderResult(res, description, cvId) {
       <section aria-label="Oferta con palabras marcadas">
         <div class="legend" role="group" aria-label="Qué marcar en la oferta">
           <button type="button" class="legend-btn" data-legend="ok" aria-pressed="true"><span class="legend-swatch"></span>En tu CV (${matched.length})</button>
+          ${partial.length ? `<button type="button" class="legend-btn" data-legend="low" aria-pressed="true"><span class="legend-swatch is-low"></span>Nivel insuficiente (${partial.length})</button>` : ''}
           <button type="button" class="legend-btn" data-legend="miss" aria-pressed="true"><span class="legend-swatch is-miss"></span>Te faltan (${missing.length})</button>
         </div>
         <div class="offer-text" style="margin-top:12px" tabindex="0">${html}</div>
       </section>
+
+      ${levels.length ? renderLevels(levels) : ''}
 
       <section class="gaps">
         <div class="gap-group">
@@ -140,7 +164,8 @@ function renderResult(res, description, cvId) {
         </div>
         <div class="gap-group">
           <h3>Lo que ya cubres</h3>
-          ${matched.length ? `<ul class="kw-list">${matched.map(t => `<li class="kw kw-ok" data-key="${escapeHtml(keyOf(t))}">${label(t)}</li>`).join('')}</ul>` : `<p class="hint">Ninguna todavía.</p>`}
+          ${partial.length ? `<ul class="kw-list" style="margin-bottom:8px">${partial.map(t => `<li class="kw kw-low" data-key="${escapeHtml(keyOf(t))}" title="La tienes, pero con menos nivel del que piden">${label(t)}</li>`).join('')}</ul>` : ''}
+          ${matched.length ? `<ul class="kw-list">${matched.map(t => `<li class="kw kw-ok" data-key="${escapeHtml(keyOf(t))}">${label(t)}</li>`).join('')}</ul>` : `${partial.length ? '' : '<p class="hint">Ninguna todavía.</p>'}`}
         </div>
       </section>` : ''}
 

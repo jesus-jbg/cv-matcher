@@ -26,9 +26,9 @@ exports.createApplication = async (req, res) => {
     }
 
     // Cargar también experiencia, estudios y habilidades del CV para comparar con la oferta
-    const [experiences] = await db.query('SELECT company, position FROM cv_experiences WHERE cv_id = ?', [cvToMatch.id]);
-    const [education] = await db.query('SELECT institution, degree FROM cv_education WHERE cv_id = ?', [cvToMatch.id]);
-    const [skills] = await db.query('SELECT skill_name FROM cv_skills WHERE cv_id = ?', [cvToMatch.id]);
+    const [experiences] = await db.query('SELECT company, position, description FROM cv_experiences WHERE cv_id = ?', [cvToMatch.id]);
+    const [education] = await db.query('SELECT institution, degree, description FROM cv_education WHERE cv_id = ?', [cvToMatch.id]);
+    const [skills] = await db.query('SELECT skill_name, level FROM cv_skills WHERE cv_id = ?', [cvToMatch.id]);
     cvToMatch.experiences = experiences;
     cvToMatch.education = education;
     cvToMatch.skills = skills;
@@ -47,7 +47,9 @@ exports.createApplication = async (req, res) => {
       message: 'Candidatura generada con éxito',
       match_percentage: matchPercentage,
       matched_keywords: result.matched,
+      partial_keywords: result.partial,
       missing_keywords: result.missing,
+      skill_levels: result.skillLevels,
       total_keywords: result.totalKeywords,
       cv_title: cvToMatch.title || `CV #${cvToMatch.id}`,
       company_name, job_title, slug

@@ -27,6 +27,10 @@ function parts(data) {
   };
 }
 
+// Comentario de una experiencia/estudio (saltos de línea respetados)
+const note = (e, style = 'font-size:12px;color:#475569;margin-top:3px;line-height:1.45;') =>
+  e.description ? `<div style="${style}">${esc(e.description).replace(/\n/g, '<br>')}</div>` : '';
+
 const img = (src, size = 80) =>
   src ? `<img src="${src}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;">` : '';
 
@@ -43,8 +47,8 @@ function modern(p) {
       </div>
     </div>
     ${p.summary ? `<div style="margin-bottom:25px;background:#f1f6f3;padding:15px;border-left:4px solid ${accent};border-radius:0 8px 8px 0;"><h2 style="font-size:13px;font-weight:bold;color:${accent};margin:0 0 6px;">PERFIL PROFESIONAL</h2><p style="font-size:13px;line-height:1.5;margin:0;">${p.summary}</p></div>` : ''}
-    ${p.exps.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">EXPERIENCIA LABORAL</h2>${p.exps.map(e => `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;color:#334155;">${esc(e.position)}</strong><span style="font-size:12px;color:#64748b;font-weight:600;white-space:nowrap;">${esc(range(e, 'Presente'))}</span></div><div style="font-size:13px;color:#475569;">${esc(e.company)}</div></div>`).join('')}</div>` : ''}
-    ${p.edus.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">EDUCACIÓN</h2>${p.edus.map(e => `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;color:#334155;">${esc(e.degree)}</strong><span style="font-size:12px;color:#64748b;font-weight:600;white-space:nowrap;">${esc(range(e, 'En curso'))}</span></div><div style="font-size:13px;color:#475569;">${esc(e.institution)}</div></div>`).join('')}</div>` : ''}
+    ${p.exps.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">EXPERIENCIA LABORAL</h2>${p.exps.map(e => `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;color:#334155;">${esc(e.position)}</strong><span style="font-size:12px;color:#64748b;font-weight:600;white-space:nowrap;">${esc(range(e, 'Presente'))}</span></div><div style="font-size:13px;color:#475569;">${esc(e.company)}</div>${note(e)}</div>`).join('')}</div>` : ''}
+    ${p.edus.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">EDUCACIÓN</h2>${p.edus.map(e => `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;color:#334155;">${esc(e.degree)}</strong><span style="font-size:12px;color:#64748b;font-weight:600;white-space:nowrap;">${esc(range(e, 'En curso'))}</span></div><div style="font-size:13px;color:#475569;">${esc(e.institution)}</div>${note(e)}</div>`).join('')}</div>` : ''}
     ${p.skills.length ? `<div><h2 style="${h2}">HABILIDADES Y TECNOLOGÍAS</h2><div style="display:flex;flex-wrap:wrap;gap:8px;">${p.skills.map(s => `<span style="background:#e4efea;color:#0f4a3c;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;">${esc(s.skill_name)} (${esc(s.level)})</span>`).join('')}</div></div>` : ''}
   </div>`;
 }
@@ -61,8 +65,8 @@ function classic(p) {
       </div>
     </div>
     ${p.summary ? `<div style="margin-bottom:20px;"><h2 style="${h2}">Extracto profesional</h2><p style="font-size:13px;line-height:1.6;margin:0;">${p.summary}</p></div>` : ''}
-    ${p.exps.length ? `<div style="margin-bottom:20px;"><h2 style="${h2}">Experiencia laboral</h2>${p.exps.map(e => `<div style="margin-bottom:10px;"><strong style="font-size:14px;">${esc(e.position)}</strong> – <em>${esc(e.company)}</em> <span style="font-size:12px;color:#666;float:right;">${esc(range(e, 'Presente'))}</span></div>`).join('')}</div>` : ''}
-    ${p.edus.length ? `<div style="margin-bottom:20px;"><h2 style="${h2}">Educación</h2>${p.edus.map(e => `<div style="margin-bottom:10px;"><strong style="font-size:14px;">${esc(e.degree)}</strong> – <em>${esc(e.institution)}</em> <span style="font-size:12px;color:#666;float:right;">${esc(range(e, 'En curso'))}</span></div>`).join('')}</div>` : ''}
+    ${p.exps.length ? `<div style="margin-bottom:20px;"><h2 style="${h2}">Experiencia laboral</h2>${p.exps.map(e => `<div style="margin-bottom:10px;"><strong style="font-size:14px;">${esc(e.position)}</strong> – <em>${esc(e.company)}</em> <span style="font-size:12px;color:#666;float:right;">${esc(range(e, 'Presente'))}</span>${note(e, 'clear:both;font-size:12px;color:#333;padding-top:3px;line-height:1.45;')}</div>`).join('')}</div>` : ''}
+    ${p.edus.length ? `<div style="margin-bottom:20px;"><h2 style="${h2}">Educación</h2>${p.edus.map(e => `<div style="margin-bottom:10px;"><strong style="font-size:14px;">${esc(e.degree)}</strong> – <em>${esc(e.institution)}</em> <span style="font-size:12px;color:#666;float:right;">${esc(range(e, 'En curso'))}</span>${note(e, 'clear:both;font-size:12px;color:#333;padding-top:3px;line-height:1.45;')}</div>`).join('')}</div>` : ''}
     ${p.skills.length ? `<div><h2 style="${h2}">Competencias técnicas</h2><p style="font-size:13px;margin:0;">${p.skills.map(s => `${esc(s.skill_name)} (${esc(s.level)})`).join(' • ')}</p></div>` : ''}
   </div>`;
 }
@@ -79,8 +83,8 @@ function minimal(p) {
       </div>
     </div>
     ${p.summary ? `<div style="margin-bottom:25px;"><h2 style="${h2}">Sobre mí</h2><p style="font-size:13px;line-height:1.6;color:#333;margin:0;">${p.summary}</p></div>` : ''}
-    ${p.exps.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">Experiencia</h2>${p.exps.map(e => `<div style="margin-bottom:12px;"><div style="font-size:14px;font-weight:bold;">${esc(e.position)} <span style="font-weight:normal;color:#666;">en ${esc(e.company)}</span></div><div style="font-size:12px;color:#999;">${esc(range(e, 'Presente'))}</div></div>`).join('')}</div>` : ''}
-    ${p.edus.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">Formación</h2>${p.edus.map(e => `<div style="margin-bottom:12px;"><div style="font-size:14px;font-weight:bold;">${esc(e.degree)}</div><div style="font-size:12px;color:#666;">${esc(e.institution)}${range(e, 'En curso') ? ` (${esc(range(e, 'En curso'))})` : ''}</div></div>`).join('')}</div>` : ''}
+    ${p.exps.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">Experiencia</h2>${p.exps.map(e => `<div style="margin-bottom:12px;"><div style="font-size:14px;font-weight:bold;">${esc(e.position)} <span style="font-weight:normal;color:#666;">en ${esc(e.company)}</span></div><div style="font-size:12px;color:#999;">${esc(range(e, 'Presente'))}</div>${note(e, 'font-size:12px;color:#444;margin-top:3px;line-height:1.45;')}</div>`).join('')}</div>` : ''}
+    ${p.edus.length ? `<div style="margin-bottom:25px;"><h2 style="${h2}">Formación</h2>${p.edus.map(e => `<div style="margin-bottom:12px;"><div style="font-size:14px;font-weight:bold;">${esc(e.degree)}</div><div style="font-size:12px;color:#666;">${esc(e.institution)}${range(e, 'En curso') ? ` (${esc(range(e, 'En curso'))})` : ''}</div>${note(e, 'font-size:12px;color:#444;margin-top:3px;line-height:1.45;')}</div>`).join('')}</div>` : ''}
     ${p.skills.length ? `<div><h2 style="${h2}">Tecnologías</h2><div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px;">${p.skills.map(s => `<span style="background:#f1f5f9;padding:4px 10px;border-radius:4px;">${esc(s.skill_name)} (${esc(s.level)})</span>`).join('')}</div></div>` : ''}
   </div>`;
 }
@@ -100,8 +104,8 @@ function sidebar(p) {
     <div style="flex:1;padding:34px 30px;box-sizing:border-box;">
       <h1 style="font-size:30px;font-weight:bold;margin:0 0 22px;color:#0f172a;">${p.name}</h1>
       ${p.summary ? `<div style="margin-bottom:22px;"><h2 style="${h2}">Perfil</h2><p style="font-size:13px;line-height:1.55;margin:0;">${p.summary}</p></div>` : ''}
-      ${p.exps.length ? `<div style="margin-bottom:22px;"><h2 style="${h2}">Experiencia</h2>${p.exps.map(e => `<div style="margin-bottom:12px;"><strong style="font-size:14px;">${esc(e.position)}</strong><div style="font-size:13px;color:#475569;">${esc(e.company)}</div><div style="font-size:12px;color:#64748b;">${esc(range(e, 'Presente'))}</div></div>`).join('')}</div>` : ''}
-      ${p.edus.length ? `<div><h2 style="${h2}">Formación</h2>${p.edus.map(e => `<div style="margin-bottom:12px;"><strong style="font-size:14px;">${esc(e.degree)}</strong><div style="font-size:13px;color:#475569;">${esc(e.institution)}</div><div style="font-size:12px;color:#64748b;">${esc(range(e, 'En curso'))}</div></div>`).join('')}</div>` : ''}
+      ${p.exps.length ? `<div style="margin-bottom:22px;"><h2 style="${h2}">Experiencia</h2>${p.exps.map(e => `<div style="margin-bottom:12px;"><strong style="font-size:14px;">${esc(e.position)}</strong><div style="font-size:13px;color:#475569;">${esc(e.company)}</div><div style="font-size:12px;color:#64748b;">${esc(range(e, 'Presente'))}</div>${note(e)}</div>`).join('')}</div>` : ''}
+      ${p.edus.length ? `<div><h2 style="${h2}">Formación</h2>${p.edus.map(e => `<div style="margin-bottom:12px;"><strong style="font-size:14px;">${esc(e.degree)}</strong><div style="font-size:13px;color:#475569;">${esc(e.institution)}</div><div style="font-size:12px;color:#64748b;">${esc(range(e, 'En curso'))}</div>${note(e)}</div>`).join('')}</div>` : ''}
     </div>
   </div>`;
 }
@@ -120,8 +124,8 @@ function executive(p) {
       </div>
     </div>
     ${p.summary ? row('Perfil', `<p style="font-size:13px;line-height:1.6;margin:0;">${p.summary}</p>`) : ''}
-    ${p.exps.length ? row('Experiencia', p.exps.map(e => `<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;">${esc(e.position)}</strong><span style="font-family:Arial,sans-serif;font-size:11px;color:#666;white-space:nowrap;">${esc(range(e, 'Presente'))}</span></div><div style="font-size:13px;font-style:italic;color:#444;">${esc(e.company)}</div></div>`).join('')) : ''}
-    ${p.edus.length ? row('Formación', p.edus.map(e => `<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;">${esc(e.degree)}</strong><span style="font-family:Arial,sans-serif;font-size:11px;color:#666;white-space:nowrap;">${esc(range(e, 'En curso'))}</span></div><div style="font-size:13px;font-style:italic;color:#444;">${esc(e.institution)}</div></div>`).join('')) : ''}
+    ${p.exps.length ? row('Experiencia', p.exps.map(e => `<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;">${esc(e.position)}</strong><span style="font-family:Arial,sans-serif;font-size:11px;color:#666;white-space:nowrap;">${esc(range(e, 'Presente'))}</span></div><div style="font-size:13px;font-style:italic;color:#444;">${esc(e.company)}</div>${note(e, 'font-size:12.5px;color:#333;margin-top:3px;line-height:1.5;')}</div>`).join('')) : ''}
+    ${p.edus.length ? row('Formación', p.edus.map(e => `<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;gap:12px;"><strong style="font-size:14px;">${esc(e.degree)}</strong><span style="font-family:Arial,sans-serif;font-size:11px;color:#666;white-space:nowrap;">${esc(range(e, 'En curso'))}</span></div><div style="font-size:13px;font-style:italic;color:#444;">${esc(e.institution)}</div>${note(e, 'font-size:12.5px;color:#333;margin-top:3px;line-height:1.5;')}</div>`).join('')) : ''}
     ${p.skills.length ? row('Competencias', `<p style="font-size:13px;line-height:1.7;margin:0;">${p.skills.map(s => `${esc(s.skill_name)} <span style="color:#777;">(${esc(s.level)})</span>`).join('  ·  ')}</p>`) : ''}
   </div>`;
 }
@@ -139,8 +143,8 @@ function creative(p) {
       </div>
     </div>
     ${p.summary ? `<div style="margin-bottom:24px;"><h2 style="${h2}">Sobre mí</h2><p style="font-size:13px;line-height:1.6;margin:0;">${p.summary}</p></div>` : ''}
-    ${p.exps.length ? `<div style="margin-bottom:24px;"><h2 style="${h2}">Experiencia</h2>${p.exps.map(e => `<div style="margin-bottom:12px;padding-left:12px;border-left:3px solid #0f4a3c;"><strong style="font-size:14px;">${esc(e.position)}</strong> <span style="font-size:13px;color:#444;">· ${esc(e.company)}</span><div style="font-size:12px;color:#777;">${esc(range(e, 'Presente'))}</div></div>`).join('')}</div>` : ''}
-    ${p.edus.length ? `<div style="margin-bottom:24px;"><h2 style="${h2}">Formación</h2>${p.edus.map(e => `<div style="margin-bottom:12px;padding-left:12px;border-left:3px solid #0f4a3c;"><strong style="font-size:14px;">${esc(e.degree)}</strong> <span style="font-size:13px;color:#444;">· ${esc(e.institution)}</span><div style="font-size:12px;color:#777;">${esc(range(e, 'En curso'))}</div></div>`).join('')}</div>` : ''}
+    ${p.exps.length ? `<div style="margin-bottom:24px;"><h2 style="${h2}">Experiencia</h2>${p.exps.map(e => `<div style="margin-bottom:12px;padding-left:12px;border-left:3px solid #0f4a3c;"><strong style="font-size:14px;">${esc(e.position)}</strong> <span style="font-size:13px;color:#444;">· ${esc(e.company)}</span><div style="font-size:12px;color:#777;">${esc(range(e, 'Presente'))}</div>${note(e, 'font-size:12px;color:#444;margin-top:3px;line-height:1.45;')}</div>`).join('')}</div>` : ''}
+    ${p.edus.length ? `<div style="margin-bottom:24px;"><h2 style="${h2}">Formación</h2>${p.edus.map(e => `<div style="margin-bottom:12px;padding-left:12px;border-left:3px solid #0f4a3c;"><strong style="font-size:14px;">${esc(e.degree)}</strong> <span style="font-size:13px;color:#444;">· ${esc(e.institution)}</span><div style="font-size:12px;color:#777;">${esc(range(e, 'En curso'))}</div>${note(e, 'font-size:12px;color:#444;margin-top:3px;line-height:1.45;')}</div>`).join('')}</div>` : ''}
     ${p.skills.length ? `<div><h2 style="${h2}">Habilidades</h2><div style="display:flex;flex-wrap:wrap;gap:8px;">${p.skills.map(s => `<span style="border:2px solid #111;border-radius:999px;font-size:12px;font-weight:700;padding:3px 11px;">${esc(s.skill_name)}</span>`).join('')}</div></div>` : ''}
   </div>`;
 }
@@ -204,15 +208,33 @@ export function fileBaseName(title) {
 
 export async function exportPdf(data) {
   await loadScript(HTML2PDF_URL);
+  // El CV debe estar dentro de la página (no suelto en memoria) y con ancho fijo;
+  // si no, html2canvas lo captura vacío y el PDF sale en blanco.
+  // El contenedor externo es el que se coloca; el elemento que se captura NO debe
+  // ser absolute/fixed, porque html2pdf lo clona y le saldría altura 0.
+  const holder = document.createElement('div');
+  holder.style.cssText = `position:absolute;left:0;top:0;width:${PAGE_W}px;background:#fff;color:#000;z-index:-1;`;
   const el = document.createElement('div');
+  el.style.cssText = `width:${PAGE_W}px;background:#fff;`;
   el.innerHTML = buildCvHtml(data);
-  await window.html2pdf().set({
-    margin: 0,
-    filename: `${fileBaseName(data.title)}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(el).save();
+  holder.appendChild(el);
+  document.body.appendChild(holder);
+  const scrollY = window.scrollY;
+  window.scrollTo(0, 0);
+  try {
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    await window.html2pdf().set({
+      margin: 0,
+      filename: `${fileBaseName(data.title)}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] }
+    }).from(el).save();
+  } finally {
+    holder.remove();
+    window.scrollTo(0, scrollY);
+  }
 }
 
 // Word abre este HTML como documento editable. Se guarda como .doc (no .docx):

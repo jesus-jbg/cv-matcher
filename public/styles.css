@@ -547,6 +547,7 @@ img, svg { display: block; max-width: 100%; }
 }
 .legend-btn[aria-pressed="false"] { opacity: 0.55; text-decoration: line-through; }
 .legend-swatch { width: 14px; height: 10px; border-radius: 2px 5px 3px 5px; background: var(--marker); }
+.legend-swatch.is-low { background: linear-gradient(to top, var(--marker) 55%, transparent 55%); border-bottom: 2px dashed var(--coral); border-radius: 2px; }
 .legend-swatch.is-miss { background: var(--coral-soft); border-bottom: 2px dotted var(--coral); border-radius: 2px; }
 
 .offer-text {
@@ -569,6 +570,13 @@ img, svg { display: block; max-width: 100%; }
   text-decoration: underline wavy var(--coral); text-decoration-thickness: 1.5px; text-underline-offset: 0.25em;
   border-radius: 0.2em;
 }
+.mk-low {
+  color: var(--ink);
+  background: linear-gradient(to top, var(--marker) 52%, transparent 52%);
+  text-decoration: underline dashed var(--coral); text-decoration-thickness: 1.5px; text-underline-offset: 0.25em;
+}
+:root[data-theme="dark"] .mk-low { color: var(--ink); }
+.hide-low .mk-low { background: none; color: inherit; text-decoration: none; }
 .hide-ok .mk-ok { background-size: 0% 100%; color: inherit; }
 .hide-miss .mk-miss { background: none; color: inherit; text-decoration: none; }
 .mk.is-hot { box-shadow: 0 0 0 2px var(--ink); }
@@ -583,6 +591,7 @@ img, svg { display: block; max-width: 100%; }
 }
 .kw-ok { background: color-mix(in srgb, var(--marker) 55%, var(--sheet)); color: var(--ink); }
 :root[data-theme="dark"] .kw-ok { color: var(--marker-ink); }
+.kw-low { background: linear-gradient(to top, color-mix(in srgb, var(--marker) 70%, var(--sheet)) 55%, transparent 55%); border: 1px dashed var(--coral); color: var(--ink); }
 .kw-miss { padding-right: 4px; border: 1px dashed var(--coral); color: var(--coral-ink); }
 .kw-add {
   display: grid; place-items: center; width: 24px; height: 24px; padding: 0;
@@ -779,3 +788,15 @@ img, svg { display: block; max-width: 100%; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- comentario de experiencias/estudios y niveles exigidos por la oferta */
+.opt { font-style: normal; font-weight: 400; color: var(--ink-3); }
+.entry-note { min-height: 72px; }
+.levels h3 { margin-bottom: 10px; font-size: 1rem; font-weight: 650; }
+.level-list { display: grid; gap: 6px; }
+.level-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--sheet-2); font-size: 0.9rem; }
+.level-row .icon { width: 1rem; height: 1rem; flex: none; }
+.level-row.is-short { border-color: color-mix(in srgb, var(--coral) 55%, var(--line)); }
+.level-row.is-short .icon { color: var(--coral-ink); }
+.level-skill { font-weight: 650; }
+.level-detail { color: var(--ink-2); margin-left: auto; }

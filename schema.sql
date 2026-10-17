@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS cv_experiences (
   start_date DATE NULL,
   end_date   DATE NULL,
   is_current TINYINT(1) NOT NULL DEFAULT 0,
+  description TEXT NULL,
   INDEX idx_exp_cv (cv_id),
   CONSTRAINT fk_exp_cv FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS cv_education (
   start_date  DATE NULL,
   end_date    DATE NULL,
   is_current  TINYINT(1) NOT NULL DEFAULT 0,
+  description TEXT NULL,
   INDEX idx_edu_cv (cv_id),
   CONSTRAINT fk_edu_cv FOREIGN KEY (cv_id) REFERENCES cvs(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -104,3 +106,7 @@ CREATE TABLE IF NOT EXISTS job_applications (
 --      ALTER TABLE cvs MODIFY photo MEDIUMTEXT NULL;
 -- 2) Para que borrar un CV conserve sus candidaturas:
 --      ALTER TABLE job_applications MODIFY cv_id INT NULL;
+-- 3) Comentario (descripción) en experiencias y estudios. El servidor lo añade
+--    solo al arrancar si falta; este es el equivalente manual:
+--      ALTER TABLE cv_experiences ADD COLUMN description TEXT NULL;
+--      ALTER TABLE cv_education   ADD COLUMN description TEXT NULL;

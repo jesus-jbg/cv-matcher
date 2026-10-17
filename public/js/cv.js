@@ -33,7 +33,8 @@ function readForm() {
       return {
         company: cell(li, '.exp-company'), position: cell(li, '.exp-position'),
         start_date: cell(li, '.exp-start'), end_date: current ? '' : cell(li, '.exp-end'),
-        is_current: current ? 1 : 0
+        is_current: current ? 1 : 0,
+        description: cell(li, '.exp-desc')
       };
     }),
     education: $$('#educationContainer > li').map(li => {
@@ -41,7 +42,8 @@ function readForm() {
       return {
         institution: cell(li, '.edu-institution'), degree: cell(li, '.edu-degree'),
         start_date: cell(li, '.edu-start'), end_date: current ? '' : cell(li, '.edu-end'),
-        is_current: current ? 1 : 0
+        is_current: current ? 1 : 0,
+        description: cell(li, '.edu-desc')
       };
     }),
     skills: $$('#skillContainer > li').map(li => ({ skill_name: li.dataset.name, level: li.dataset.level }))
@@ -153,6 +155,7 @@ function addExperience(data = {}, { focus = false } = {}) {
       <label class="field"><span>Empresa</span><input class="input exp-company" type="text" required maxlength="120"></label>
       <label class="field"><span>Desde</span><input class="input exp-start" type="date"></label>
       <label class="field"><span>Hasta</span><input class="input exp-end" type="date"></label>
+      <label class="field span-2"><span>Comentario <em class="opt">(opcional)</em></span><textarea class="textarea entry-note exp-desc" rows="3" maxlength="1000" placeholder="Qué hacías: tareas, tecnologías y logros. Ej.: Automaticé informes en Odoo con Python y reduje el trabajo manual."></textarea></label>
     </div>
     <div class="entry-foot">
       <label class="check"><input type="checkbox" class="exp-current"><span>Trabajo aquí actualmente</span></label>
@@ -162,6 +165,7 @@ function addExperience(data = {}, { focus = false } = {}) {
   $('.exp-company', li).value = data.company || '';
   $('.exp-start', li).value = toDateInput(data.start_date);
   $('.exp-end', li).value = toDateInput(data.end_date);
+  $('.exp-desc', li).value = data.description || '';
   $('.exp-current', li).checked = !!Number(data.is_current);
   setEndState(li, '.exp-current', '.exp-end');
   $('#experienceContainer').appendChild(li);
@@ -180,6 +184,7 @@ function addEducation(data = {}, { focus = false } = {}) {
       <label class="field"><span>Centro</span><input class="input edu-institution" type="text" required maxlength="120"></label>
       <label class="field"><span>Desde</span><input class="input edu-start" type="date"></label>
       <label class="field"><span>Hasta</span><input class="input edu-end" type="date"></label>
+      <label class="field span-2"><span>Comentario <em class="opt">(opcional)</em></span><textarea class="textarea entry-note edu-desc" rows="3" maxlength="1000" placeholder="Qué estudiaste: asignaturas, tecnologías, proyecto final. Ej.: Java, PHP, MySQL y un proyecto final de gestión de almacén."></textarea></label>
     </div>
     <div class="entry-foot">
       <label class="check"><input type="checkbox" class="edu-current"><span>Sigo estudiando</span></label>
@@ -189,6 +194,7 @@ function addEducation(data = {}, { focus = false } = {}) {
   $('.edu-institution', li).value = data.institution || '';
   $('.edu-start', li).value = toDateInput(data.start_date);
   $('.edu-end', li).value = toDateInput(data.end_date);
+  $('.edu-desc', li).value = data.description || '';
   $('.edu-current', li).checked = !!Number(data.is_current);
   setEndState(li, '.edu-current', '.edu-end');
   $('#educationContainer').appendChild(li);
@@ -439,12 +445,14 @@ function toSavePayload(cv, isDefault) {
     experiences: (cv.experiences || []).map(e => ({
       company: e.company, position: e.position,
       start_date: toDateInput(e.start_date), end_date: toDateInput(e.end_date),
-      is_current: Number(e.is_current) ? 1 : 0
+      is_current: Number(e.is_current) ? 1 : 0,
+      description: e.description || ''
     })),
     education: (cv.education || []).map(e => ({
       institution: e.institution, degree: e.degree,
       start_date: toDateInput(e.start_date), end_date: toDateInput(e.end_date),
-      is_current: Number(e.is_current) ? 1 : 0
+      is_current: Number(e.is_current) ? 1 : 0,
+      description: e.description || ''
     })),
     skills: (cv.skills || []).map(s => ({ skill_name: s.skill_name, level: s.level }))
   };
