@@ -25,14 +25,13 @@ Proyecto personal de portfolio: backend en Node.js/Express con MySQL y front end
 
 ## Capturas
 
-| Mis CVs | Plantillas |
+| Plantillas |
+|---|
+| ![Plantillas](docs/screenshots/plantillas.png) |
+
+| Candidaturas | Móvil |
 |---|---|
-| ![Mis CVs](docs/screenshots/cvs.png) | ![Plantillas](docs/screenshots/plantillas.png) |
-
-| Candidaturas | Modo oscuro | Móvil |
-|---|---|---|
-| ![Candidaturas](docs/screenshots/jobs.png) | ![Modo oscuro](docs/screenshots/dark-analizar.png) | ![Móvil](docs/screenshots/mobile-analizar.png) |
-
+| ![Candidaturas](docs/screenshots/jobs.png) | ![Móvil](docs/screenshots/movil.gif) |
 ## Tecnologías
 
 | Capa | Herramientas |
