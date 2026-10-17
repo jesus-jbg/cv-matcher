@@ -18,10 +18,16 @@ function fold(text) {
   return out;
 }
 const TOKEN_RE = /[a-z0-9](?:[a-z0-9+#.]*[a-z0-9+#])?/g;
+// Idéntica a stem() de src/utils/matchCalculator.js
+const SUFFIXES = ['amientos', 'imientos', 'amiento', 'imiento', 'aciones', 'iciones', 'adores', 'adoras', 'idades',
+  'acion', 'icion', 'ador', 'adora', 'idad', 'mente', 'antes', 'ables', 'ibles', 'ando', 'iendo',
+  'ante', 'able', 'ible', 'ados', 'adas', 'idos', 'idas', 'ado', 'ada', 'ido', 'ida',
+  'es', 'as', 'os', 'ar', 'er', 'ir', 'a', 'o', 'e', 's'];
 function stem(t) {
-  if (/[+#.]/.test(t)) return t;
-  if (t.length > 5 && t.endsWith('es')) return t.slice(0, -2);
-  if (t.length > 4 && t.endsWith('s')) return t.slice(0, -1);
+  if (/[+#.]/.test(t) || t.length < 5) return t;
+  for (const suf of SUFFIXES) {
+    if (t.endsWith(suf) && t.length - suf.length >= 4) return t.slice(0, -suf.length);
+  }
   return t;
 }
 const keyOf = term => stem(fold(String(term)));
@@ -35,6 +41,8 @@ function highlight(text, matched, missing, partial = []) {
   const lowKeys = new Map(partial.map((t, i) => [keyOf(t), i]));
   const missKeys = new Map(missing.map((t, i) => [keyOf(t), i]));
   const surface = new Map();
+  const exactSeen = new Set();
+  const termFold = new Map([...matched, ...partial, ...missing].map(t => [keyOf(t), fold(String(t))]));
   const folded = fold(text);
   let html = '';
   let last = 0;
@@ -46,7 +54,11 @@ function highlight(text, matched, missing, partial = []) {
     const kind = okKeys.has(key) ? 'ok' : lowKeys.has(key) ? 'low' : missKeys.has(key) ? 'miss' : null;
     if (!kind) continue;
     const original = text.slice(m.index, m.index + m[0].length);
-    if (!surface.has(key)) surface.set(key, original);
+    // Etiqueta: se prefiere la aparición exacta de la palabra que devuelve el servidor
+    // (así «diseño» no se muestra como «Diseñar», que comparte raíz).
+    const exact = termFold.get(key) === m[0];
+    if (exact ? !exactSeen.has(key) : !surface.has(key)) surface.set(key, original);
+    if (exact) exactSeen.add(key);
     html += escapeHtml(text.slice(last, m.index));
     html += `<mark class="mk mk-${kind}" data-key="${escapeHtml(key)}" style="--i:${Math.min(n++, 40)}">${escapeHtml(original)}</mark>`;
     last = m.index + m[0].length;

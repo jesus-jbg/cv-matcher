@@ -2,7 +2,7 @@ const db = require('../config/db');
 const { calculateMatch } = require('../utils/matchCalculator');
 
 function generateSlug(company, jobTitle) {
-  const cleanStr = `${company}-${jobTitle}`.toLowerCase().replace(/[^a-z0-9]/g, '-');
+  const cleanStr = `${company}-${jobTitle}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
   const randomCode = Math.random().toString(36).substring(2, 7);
   return `${cleanStr}-${randomCode}`;
 }

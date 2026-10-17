@@ -36,20 +36,58 @@ function normalize(text) {
     .replace(/[̀-ͯ]/g, '');
 }
 
-function tokenize(text) {
+// Palabras habituales en ofertas que NO son una habilidad que se pueda tener o no
+// (ya sin tildes ni ñ). Se descartan al leer la oferta, así no salen como «te faltan».
+const GENERIC = new Set(`
+agil agiles carrera colaborar colaboracion colaborativo colaborativa continuo continua continuos continuas control
+definir definicion desarrollar desplegar despliegue disenador disenadores disenadora eficiente eficientes eficaz eficaces
+encargaras formacion practica practicas competitivo competitiva salario beneficios beneficio sociales seguro medico tickets
+restaurante flexible flexibles intensiva intensivo verano aportada aportado plan indispensable indispensables minimo
+maximo perfil perfiles revision revisiones resolucion problemas problema funcionalidades funcionalidad nuevas nuevos nueva
+nuevo mejora mejoras mejorar calidad solida solido solidas solidos buenas buena buen bueno ambiente dinamico dinamica
+motivado motivada proactivo proactiva autonomo autonoma responsable orientado orientada resultados cliente clientes
+proceso procesos solucion soluciones entorno entornos area areas dia dias mes meses tiempo vez momento manera forma
+parte siempre ademas incluso tipo tipos ejemplo ejemplos aspecto aspectos seran sera tendras podras podran
+alto alta altos altas posibilidad posibilidades oportunidad oportunidades crecimiento profesional profesionales
+aplicacion aplicaciones metodologia metodologias version versiones colaborador colaboradores comunicacion actitud ganas pasion interes interesado interesada incorporacion
+`.split(/\s+/).filter(Boolean));
+
+// Tecnologías que terminan como un verbo en español (docker, angular...): no se descartan.
+const TECH_KEEP = new Set(['docker', 'angular', 'composer', 'server', 'router', 'flutter', 'jupyter', 'cucumber', 'polymer',
+  'scraper', 'zapier', 'cypher', 'player', 'builder', 'gender', 'ansible', 'vagrant']);
+
+// Formas verbales, adverbios y participios: «desarrollar», «encargarás», «automatizado», «rápidamente».
+function looksLikeVerbOrFiller(t) {
+  if (TECH_KEEP.has(t) || /[+#.\d]/.test(t)) return false;
+  if (t.length >= 6 && /(ar|er|ir)$/.test(t)) return true;
+  if (t.length >= 6 && /(aras|eras|iras|aran|eran|iran|aremos|eremos|iremos|amos|emos|ando|iendo|mente)$/.test(t)) return true;
+  if (t.length >= 7 && /(ado|ada|ados|adas|ido|ida|idos|idas)$/.test(t)) return true;
+  return false;
+}
+
+function tokenize(text, { filterGeneric = false } = {}) {
   const raw = normalize(text).match(/[a-z0-9](?:[a-z0-9+#.]*[a-z0-9+#])?/g) || [];
   return raw.filter(t => {
     if (STOPWORDS.has(t)) return false;
     if (/^\d+$/.test(t)) return false;
+    if (filterGeneric && (GENERIC.has(t) || looksLikeVerbOrFiller(t))) return false;
     if (t.length >= 3) return true;
     return SHORT_ALLOWED.has(t) || (/[+#]/.test(t) && t.length >= 2);
   });
 }
 
+// Raíz de la palabra: quita género, número y terminaciones habituales, de modo que
+// «continuo/continua», «desarrollo/desarrollar» o «diseño/diseñadores» cuenten como una sola.
+// OJO: debe ser idéntica a stem() de public/js/match.js.
+const SUFFIXES = ['amientos', 'imientos', 'amiento', 'imiento', 'aciones', 'iciones', 'adores', 'adoras', 'idades',
+  'acion', 'icion', 'ador', 'adora', 'idad', 'mente', 'antes', 'ables', 'ibles', 'ando', 'iendo',
+  'ante', 'able', 'ible', 'ados', 'adas', 'idos', 'idas', 'ado', 'ada', 'ido', 'ida',
+  'es', 'as', 'os', 'ar', 'er', 'ir', 'a', 'o', 'e', 's'];
 function stem(t) {
-  if (/[+#.]/.test(t)) return t;
-  if (t.length > 5 && t.endsWith('es')) return t.slice(0, -2);
-  if (t.length > 4 && t.endsWith('s')) return t.slice(0, -1);
+  if (/[+#.]/.test(t) || t.length < 5) return t;
+  for (const suf of SUFFIXES) {
+    if (t.endsWith(suf) && t.length - suf.length >= 4) return t.slice(0, -suf.length);
+  }
   return t;
 }
 
@@ -154,7 +192,7 @@ function calculateMatch(cv, jobDescription) {
   // Palabras clave de la oferta: frecuencia -> peso (1 a 2)
   const counts = new Map();
   const display = new Map();
-  tokenize(jobDescription).forEach(t => {
+  tokenize(jobDescription, { filterGeneric: true }).forEach(t => {
     const key = stem(t);
     counts.set(key, (counts.get(key) || 0) + 1);
     if (!display.has(key)) display.set(key, t);
