@@ -8,6 +8,8 @@ const cvRoutes = require('./routes/cvRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 
 const app = express();
+// Detrás de un proxy (Render, Railway...) pon TRUST_PROXY=1 para que el límite de intentos use la IP real
+if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
 
 app.use(cors());
 app.use(express.json());

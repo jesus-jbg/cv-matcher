@@ -156,19 +156,33 @@ function detectRequiredLevels(cvSkills, jobDescription) {
     if (!levelAt.length) return;
     const stemmed = words.map(w => variants(stem(w)));
 
+    // Posiciones de cada habilidad en esta frase (todas sus palabras deben aparecer)
+    const found = [];
     skills.forEach(x => {
-      // Todas las palabras de la habilidad deben aparecer en la misma frase.
       const positions = [];
       for (const set of x.perToken) {
         const at = stemmed.map((vs, i) => (vs.some(v => set.has(v)) ? i : -1)).filter(i => i >= 0);
         if (!at.length) return;
         positions.push(...at);
       }
+      found.push({ x, positions });
+    });
+
+    // «Python avanzado y MySQL»: «avanzado» pegado a Python es de Python, no de MySQL.
+    // Una palabra de nivel pegada a una habilidad solo la usa esa habilidad.
+    const owners = levelAt.map(l => found
+      .filter(f => f.positions.some(pos => Math.abs(pos - l.i) === 1 && piece[pos] === piece[l.i]))
+      .map(f => f.x));
+
+    found.forEach(({ x, positions }) => {
       let best = null;
-      positions.forEach(pos => levelAt.forEach(l => {
-        const d = Math.abs(pos - l.i) + COMMA_COST * Math.abs(piece[pos] - piece[l.i]);
-        if (d <= MAX_LEVEL_DISTANCE && (!best || d < best.d)) best = { d, lv: l.lv };
-      }));
+      levelAt.forEach((l, k) => {
+        if (owners[k].length && !owners[k].includes(x)) return;
+        positions.forEach(pos => {
+          const d = Math.abs(pos - l.i) + COMMA_COST * Math.abs(piece[pos] - piece[l.i]);
+          if (d <= MAX_LEVEL_DISTANCE && (!best || d < best.d)) best = { d, lv: l.lv };
+        });
+      });
       if (best && best.lv > x.required) x.required = best.lv; // si aparece varias veces, manda la más exigente
     });
   });

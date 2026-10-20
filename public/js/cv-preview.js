@@ -186,19 +186,6 @@ export function mountPreview({ stage, wrap, paper }) {
 }
 
 /* --------------------------------------------------------- exportación */
-const HTML2PDF_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    if (window.html2pdf) return resolve();
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error('No se pudo cargar el generador de PDF. Comprueba tu conexión a internet.'));
-    document.head.appendChild(s);
-  });
-}
-
 export function fileBaseName(title) {
   const base = String(title || 'CV')
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -206,35 +193,48 @@ export function fileBaseName(title) {
   return base || 'CV';
 }
 
-export async function exportPdf(data) {
-  await loadScript(HTML2PDF_URL);
-  // El CV debe estar dentro de la página (no suelto en memoria) y con ancho fijo;
-  // si no, html2canvas lo captura vacío y el PDF sale en blanco.
-  // El contenedor externo es el que se coloca; el elemento que se captura NO debe
-  // ser absolute/fixed, porque html2pdf lo clona y le saldría altura 0.
-  const holder = document.createElement('div');
-  holder.style.cssText = `position:absolute;left:0;top:0;width:${PAGE_W}px;background:#fff;color:#000;z-index:-1;`;
-  const el = document.createElement('div');
-  el.style.cssText = `width:${PAGE_W}px;background:#fff;`;
-  el.innerHTML = buildCvHtml(data);
-  holder.appendChild(el);
-  document.body.appendChild(holder);
-  const scrollY = window.scrollY;
-  window.scrollTo(0, 0);
-  try {
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    await window.html2pdf().set({
-      margin: 0,
-      filename: `${fileBaseName(data.title)}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'] }
-    }).from(el).save();
-  } finally {
-    holder.remove();
-    window.scrollTo(0, scrollY);
-  }
+// Documento HTML listo para imprimir en A4. Al imprimirlo como PDF el texto queda
+// seleccionable (los sistemas ATS y los buscadores de los reclutadores pueden leerlo).
+export function buildPrintDocument(data) {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(fileBaseName(data.title))}</title>
+<style>
+  @page { size: A4; margin: 10mm; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body > div { width: 100% !important; }
+  h2, strong { break-after: avoid; }
+</style></head><body>${buildCvHtml(data)}</body></html>`;
+}
+
+// Abre el cuadro de impresión del navegador: ahí se elige «Guardar como PDF».
+// A diferencia de una captura de pantalla, el PDF resultante contiene texto real.
+export function exportPdf(data) {
+  return new Promise((resolve, reject) => {
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    const previousTitle = document.title;
+    const cleanup = () => {
+      document.title = previousTitle;
+      setTimeout(() => frame.remove(), 500);
+    };
+    frame.onload = () => {
+      try {
+        const win = frame.contentWindow;
+        document.title = fileBaseName(data.title); // nombre sugerido para el PDF
+        win.addEventListener('afterprint', () => { cleanup(); resolve(); });
+        win.focus();
+        win.print();
+        // Si el navegador no avisa de que ha terminado, se limpia igualmente
+        setTimeout(() => { cleanup(); resolve(); }, 60000);
+      } catch (err) {
+        cleanup();
+        reject(new Error('No se pudo abrir el cuadro de impresión.'));
+      }
+    };
+    document.body.appendChild(frame);
+    frame.srcdoc = buildPrintDocument(data);
+  });
 }
 
 // Word abre este HTML como documento editable. Se guarda como .doc (no .docx):

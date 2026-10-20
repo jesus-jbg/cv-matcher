@@ -5,6 +5,7 @@ import { $, hydrateIcons, initTheme, icon, setLoading, prefersReducedMotion } fr
 if (getToken()) window.location.replace('/dashboard.html');
 
 let mode = 'login';
+let registrationClosed = false;
 
 function setMode(next) {
   mode = next;
@@ -12,7 +13,7 @@ function setMode(next) {
   const forgot = mode === 'forgot';
   $('#tabLogin').setAttribute('aria-selected', String(mode === 'login'));
   $('#tabRegister').setAttribute('aria-selected', String(reg));
-  $('#authTabs').hidden = forgot;
+  $('#authTabs').hidden = forgot || registrationClosed;
   $('#passwordField').hidden = forgot;
   $('#password').required = !forgot;
   $('#forgotLink').hidden = mode !== 'login';
@@ -105,11 +106,37 @@ async function submitForgot(email) {
   }
 }
 
+// Botón de demo y registro, según lo que ofrezca el servidor
+async function loadConfig() {
+  try {
+    const cfg = await api('/api/auth/config');
+    $('#demoBtn').hidden = !cfg.demo;
+    if (cfg.registration === false) { registrationClosed = true; setMode('login'); }
+  } catch (_) { /* sin configuración: se muestra lo normal */ }
+}
+
+async function startDemo() {
+  const btn = $('#demoBtn');
+  showError('');
+  setLoading(btn, true, 'Preparando la demo…');
+  try {
+    const res = await api('/api/auth/demo', { method: 'POST', body: {} });
+    if (!res || !res.token) throw new Error('Respuesta inesperada del servidor.');
+    setToken(res.token);
+    window.location.replace('/dashboard.html');
+  } catch (err) {
+    showError(err.message);
+    setLoading(btn, false);
+  }
+}
+
 hydrateIcons();
 initTheme();
 setupPasswordToggle();
 animateHero();
 setMode('login');
+loadConfig();
+$('#demoBtn').addEventListener('click', startDemo);
 
 $('#tabLogin').addEventListener('click', () => setMode('login'));
 $('#tabRegister').addEventListener('click', () => setMode('register'));

@@ -680,8 +680,11 @@ export async function initCvs() {
 
   $('#downloadPdfBtn').addEventListener('click', async e => {
     const btn = e.currentTarget;
-    setLoading(btn, true, 'Generando…');
-    try { await exportPdf(readForm()); }
+    setLoading(btn, true, 'Abriendo…');
+    try {
+      toast('En el cuadro de impresión elige «Guardar como PDF». Desactiva «Encabezados y pies de página».', { duration: 6000 });
+      await exportPdf(readForm());
+    }
     catch (err) { toast(err.message || 'No se pudo generar el PDF.', { type: 'error' }); }
     finally { setLoading(btn, false); }
   });

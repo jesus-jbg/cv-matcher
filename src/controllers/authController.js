@@ -5,6 +5,11 @@ const crypto = require('crypto');
 const { JWT_SECRET } = require('../config/jwt');
 const { sendMail } = require('../utils/mailer');
 const { hit } = require('../utils/rateLimit');
+const { insertDemoContent } = require('../utils/demoData');
+
+const DEMO_DOMAIN = 'demo.invalid';
+const demoEnabled = () => process.env.DEMO_MODE === 'true';
+const registrationOpen = () => process.env.REGISTRATION_OPEN !== 'false';
 
 const MIN_PASSWORD = 8;
 const RESET_MINUTES = 60;
@@ -14,6 +19,13 @@ const validEmail = value => typeof value === 'string' && value.length <= 255 && 
 // Registro de usuario
 exports.register = async (req, res) => {
   const { email, password } = req.body || {};
+
+  if (!registrationOpen()) {
+    return res.status(403).json({ error: 'El registro está cerrado en esta demo. Usa «Probar la demo» para entrar.' });
+  }
+  if (!hit(`register:${req.ip}`, 20, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Demasiados registros desde esta conexión. Inténtalo más tarde.' });
+  }
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
@@ -54,6 +66,10 @@ exports.login = async (req, res) => {
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
+  }
+
+  if (!hit(`login:${req.ip}`, 30, 15 * 60 * 1000) || !hit(`login-mail:${String(email).toLowerCase()}`, 10, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Demasiados intentos. Espera unos minutos y vuelve a probar.' });
   }
 
   try {
@@ -162,5 +178,32 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     console.error('Error en resetPassword:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+// Qué ofrece este servidor (el front end muestra u oculta botones según esto)
+exports.config = (req, res) => {
+  res.json({ demo: demoEnabled(), registration: registrationOpen() });
+};
+
+// Cuenta de demostración temporal: usuario nuevo con un CV y una candidatura de ejemplo.
+// Sirve para que alguien pruebe la app sin registrarse. Las cuentas demo se borran a las 24 h.
+exports.demo = async (req, res) => {
+  if (!demoEnabled()) return res.status(404).json({ error: 'La demo no está activada.' });
+  if (!hit(`demo:${req.ip}`, 10, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Demasiadas demos desde esta conexión. Inténtalo más tarde.' });
+  }
+  try {
+    await pool.query("DELETE FROM users WHERE email LIKE ? AND created_at < NOW() - INTERVAL 24 HOUR", [`demo-%@${DEMO_DOMAIN}`]);
+    const id = crypto.randomBytes(6).toString('hex');
+    const email = `demo-${id}@${DEMO_DOMAIN}`;
+    const hashed = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10); // nadie conoce esta contraseña
+    const [result] = await pool.query('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashed]);
+    await insertDemoContent(pool, result.insertId, id);
+    const token = jwt.sign({ id: result.insertId, email }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ message: 'Demo lista', token, user: { id: result.insertId, email } });
+  } catch (error) {
+    console.error('Error al crear la demo:', error);
+    res.status(500).json({ error: 'No se pudo crear la demo.' });
   }
 };

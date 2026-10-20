@@ -18,9 +18,13 @@ Proyecto personal de portfolio: backend en Node.js/Express con MySQL y front end
 - **Analizador de ofertas**:
   - Porcentaje de compatibilidad entre el CV elegido y la oferta.
   - La oferta se muestra con las palabras subrayadas: amarillo si están en tu CV, coral si faltan.
-  - Botón para añadir una habilidad que falta directamente al CV.
+  - Palabras genéricas de las ofertas (ágil, carrera, colaborar…) se descartan y las variantes de una misma palabra (continuo/continua) cuentan una sola vez.
+  - Detecta el **nivel** que pide la oferta («Python avanzado») y lo compara con el que marcaste en tu CV.
+  - Botón «+» para añadir una habilidad que falta al CV sin salir de la pantalla: el porcentaje se recalcula al momento.
+- **Comentario** en cada experiencia y estudio para explicar qué hiciste; también cuenta para el análisis.
 - **Candidaturas**: historial de ofertas analizadas, con búsqueda, orden por fecha o compatibilidad y enlace público de cada una.
-- **Exportar el CV** a PDF y a Word (`.doc`).
+- **Exportar el CV** a PDF (con texto real, compatible con ATS) y a Word (`.doc`).
+- **Modo demo** opcional: botón «Probar la demo» que crea una cuenta temporal con datos de ejemplo.
 - **Interfaz** con modo claro/oscuro, adaptada a móvil, con atajos de teclado (Ctrl+S para guardar, Ctrl+Intro para analizar) y aviso de cambios sin guardar.
 
 ## Capturas
@@ -32,6 +36,7 @@ Proyecto personal de portfolio: backend en Node.js/Express con MySQL y front end
 | Candidaturas | Móvil |
 |---|---|
 | ![Candidaturas](docs/screenshots/jobs.png) | ![Móvil](docs/screenshots/movil.gif) |
+
 ## Tecnologías
 
 | Capa | Herramientas |
@@ -43,7 +48,8 @@ Proyecto personal de portfolio: backend en Node.js/Express con MySQL y front end
 | Correo | `nodemailer` |
 | IA (opcional) | API de Claude (Anthropic) para importar CVs |
 | Front end | HTML, CSS y JavaScript vanilla (módulos ES), sin paso de compilación |
-| PDF | `html2pdf.js` (se carga desde cdnjs al exportar) |
+| PDF | Impresión del navegador («Guardar como PDF»): el texto queda seleccionable |
+| Tests | `node:test` (sin dependencias): `npm test` |
 
 ## Cómo funciona el análisis de ofertas
 
@@ -124,6 +130,24 @@ Para generar un `JWT_SECRET` seguro:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
+Variables para publicar una demo (opcionales; ver [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md)):
+
+| Variable | Descripción |
+|---|---|
+| `DB_PORT`, `DB_SSL` | Puerto y conexión cifrada para bases de datos en la nube (`DB_SSL=true`). |
+| `DEMO_MODE` | `true` muestra el botón «Probar la demo» (cuenta temporal de 24 h con datos de ejemplo). |
+| `REGISTRATION_OPEN` | `false` cierra el registro de cuentas nuevas. |
+| `TRUST_PROXY` | `1` cuando la app está detrás de un proxy (Render, Railway…). |
+| `AUTO_SCHEMA` | Por defecto crea las tablas si la base de datos está vacía; `false` lo desactiva. |
+
+### Tests
+
+```bash
+npm test
+```
+
+Comprueban el cálculo de compatibilidad: palabras genéricas, variantes, niveles, ñ y tildes, y comentarios del CV.
+
 ### Correo con Gmail
 
 Activa la verificación en dos pasos en tu cuenta de Google, crea una **contraseña de aplicación** y úsala como `SMTP_PASS` con `SMTP_HOST=smtp.gmail.com` y `SMTP_PORT=587`.
@@ -160,6 +184,8 @@ Las rutas con 🔒 requieren la cabecera `Authorization: Bearer <token>`.
 | POST | `/api/auth/login` | Iniciar sesión y recibir el token |
 | POST | `/api/auth/forgot-password` | Pedir el enlace de recuperación por correo |
 | POST | `/api/auth/reset-password` | Fijar una contraseña nueva con el enlace recibido |
+| GET | `/api/auth/config` | Qué ofrece el servidor (demo, registro abierto) |
+| POST | `/api/auth/demo` | Crear una cuenta de demostración temporal (con `DEMO_MODE=true`) |
 | GET | `/api/cv/list` 🔒 | Lista de CVs del usuario |
 | GET | `/api/cv/:id` 🔒 | Un CV completo |
 | POST | `/api/cv/save` 🔒 | Crear o actualizar un CV |
@@ -167,6 +193,8 @@ Las rutas con 🔒 requieren la cabecera `Authorization: Bearer <token>`.
 | POST | `/api/cv/import` 🔒 | Importar un CV desde PDF, DOCX o TXT (máx. 5 MB) |
 | POST | `/api/jobs` 🔒 | Analizar una oferta y guardar la candidatura |
 | GET | `/api/jobs` 🔒 | Lista de candidaturas |
+| POST | `/api/jobs/:id/skills` 🔒 | Añadir una habilidad al CV de una candidatura y recalcular el porcentaje |
+| DELETE | `/api/jobs/:id` 🔒 | Borrar una candidatura |
 | GET | `/api/jobs/public/:slug` | Datos públicos de una candidatura |
 
 ## Seguridad
@@ -175,25 +203,25 @@ Las rutas con 🔒 requieren la cabecera `Authorization: Bearer <token>`.
 - Cada usuario solo puede ver y modificar sus propios CVs y candidaturas.
 - Consultas SQL parametrizadas y texto del usuario escapado en pantalla.
 - Recuperación de contraseña con enlaces de un solo uso que caducan en 1 hora. En la base de datos solo se guarda el hash del enlace, y la respuesta es la misma exista o no el correo.
-- Límite de intentos en la recuperación de contraseña.
+- Límite de intentos en el login, el registro, la demo y la recuperación de contraseña.
 - El archivo `.env` está en `.gitignore`: **nunca lo subas a GitHub**.
 
 ## Limitaciones conocidas
 
-- El PDF se genera como imagen, así que el texto no es seleccionable y los sistemas ATS no pueden leerlo.
+- Para guardar el PDF hay que elegir «Guardar como PDF» en el cuadro de impresión del navegador (y desactivar «Encabezados y pies de página»).
 - La página pública de una candidatura muestra nombre, email y teléfono a cualquiera que tenga el enlace.
-- El análisis de ofertas no entiende sinónimos.
-- No hay tests automáticos.
+- El análisis de ofertas compara palabras, no significados: no entiende sinónimos ni contexto.
+- La detección de niveles se basa en la cercanía de palabras y puede equivocarse en frases con varias habilidades.
+- Las 3 vulnerabilidades moderadas que indica `npm audit` vienen de `mammoth` (`sprintf-js`) y no tienen arreglo publicado; solo afectan a la importación de archivos `.docx`.
 
 ## Próximos pasos
 
-- [ ] PDF con texto seleccionable, compatible con ATS
 - [ ] CV público con URL propia y control de qué datos se muestran
 - [ ] Estados de candidatura (enviada, entrevista, rechazada...) con notas
 - [ ] Sugerencias con IA para adaptar el CV a cada oferta
 - [ ] Idiomas, enlaces (LinkedIn, GitHub) y proyectos en el CV
-- [ ] `helmet`, limitación de intentos en el login y CORS restringido
-- [ ] Tests automáticos y despliegue en línea
+- [ ] `helmet` y CORS restringido
+- [ ] Más tests (API y front end)
 
 ## Autor
 
