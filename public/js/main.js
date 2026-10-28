@@ -5,6 +5,7 @@ import { startRouter } from './router.js';
 import { initCvs } from './cv.js';
 import { initMatch } from './match.js';
 import { initJobs, loadJobs } from './jobs.js';
+import { initAccount } from './account.js';
 
 if (!getToken()) {
   goToLogin();
@@ -21,4 +22,5 @@ if (!getToken()) {
   startRouter();
   loadJobs();
   initCvs();
+  initAccount();
 }

@@ -24,6 +24,8 @@ function setMode(next) {
     : reg ? 'Es gratis y tardas un minuto.' : 'Tus CVs y tus candidaturas te esperan.';
   $('#submitBtn').innerHTML = `<span>${forgot ? 'Enviar enlace' : reg ? 'Crear cuenta' : 'Entrar'}</span>`;
   $('#pwHint').hidden = !reg;
+  $('#consentField').hidden = !reg;
+  $('#consent').required = reg;
   $('#password').autocomplete = reg ? 'new-password' : 'current-password';
   showError('');
   $('#authOk').hidden = true;
@@ -74,6 +76,10 @@ async function submit(e) {
     $('#password').focus();
     return;
   }
+  if (mode === 'register' && !$('#consent').checked) {
+    showError('Para crear la cuenta tienes que aceptar la política de privacidad y los términos.');
+    return;
+  }
   showError('');
   const btn = $('#submitBtn');
   setLoading(btn, true, mode === 'register' ? 'Creando cuenta…' : 'Entrando…');
@@ -111,6 +117,7 @@ async function loadConfig() {
   try {
     const cfg = await api('/api/auth/config');
     $('#demoBtn').hidden = !cfg.demo;
+    $('#demoNotice').hidden = !cfg.demo;
     if (cfg.registration === false) { registrationClosed = true; setMode('login'); }
   } catch (_) { /* sin configuración: se muestra lo normal */ }
 }

@@ -1,9 +1,21 @@
+# Dependencias
 node_modules/
+
+# Secretos: NUNCA subir al repositorio
 .env
 .env.*
 !.env.example
-*.log
+
+# Sistema y editores
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+
+# Registros
+*.log
+npm-debug.log*
+
+# Copias y volcados de la base de datos (pueden contener datos personales)
+*.sql
+!schema.sql

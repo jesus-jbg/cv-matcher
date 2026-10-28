@@ -14,6 +14,12 @@ if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PRO
 app.use(cors());
 app.use(express.json());
 
+// Textos legales (privacidad, aviso legal, términos)
+const { render: renderLegal } = require('./legal/pages');
+for (const slug of ['privacidad', 'aviso-legal', 'terminos']) {
+  app.get(`/${slug}`, (req, res) => res.type('html').send(renderLegal(slug)));
+}
+
 // Servir archivos estáticos del Frontend
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -30,6 +36,10 @@ app.use('/api/jobs', jobRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Servidor Express listo' });
 });
+
+if (process.env.NODE_ENV === 'production' && !process.env.LEGAL_EMAIL) {
+  console.warn('⚠️  Define LEGAL_EMAIL: los textos legales necesitan un correo de contacto.');
+}
 
 const PORT = process.env.PORT || 3000;
 require('./config/migrate').ensureSchema().finally(() => {

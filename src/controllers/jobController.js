@@ -86,7 +86,8 @@ exports.getApplicationBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
     const [jobs] = await db.query(
-      'SELECT ja.*, c.full_name, c.email, c.phone, c.summary FROM job_applications ja LEFT JOIN cvs c ON ja.cv_id = c.id WHERE ja.slug = ?',
+      // Solo los campos que muestra la página pública (nada de ids internos ni de la oferta completa)
+      'SELECT ja.job_title, ja.company_name, ja.match_percentage, ja.created_at, c.full_name, c.email, c.phone, c.summary FROM job_applications ja LEFT JOIN cvs c ON ja.cv_id = c.id WHERE ja.slug = ?',
       [slug]
     );
 
@@ -96,7 +97,8 @@ exports.getApplicationBySlug = async (req, res) => {
 
     res.json(jobs[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error al leer la candidatura pública:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 

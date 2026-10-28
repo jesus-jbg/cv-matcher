@@ -207,3 +207,71 @@ exports.demo = async (req, res) => {
     res.status(500).json({ error: 'No se pudo crear la demo.' });
   }
 };
+
+
+// ---------------------------------------------------------------- Mi cuenta (RGPD)
+
+// Descarga de todos los datos de la cuenta (derecho de acceso y portabilidad)
+exports.exportData = async (req, res) => {
+  try {
+    const [users] = await pool.query('SELECT id, email, created_at FROM users WHERE id = ?', [req.user.id]);
+    if (users.length === 0) return res.status(404).json({ error: 'La cuenta ya no existe.' });
+
+    const [cvs] = await pool.query('SELECT * FROM cvs WHERE user_id = ? ORDER BY id', [req.user.id]);
+    const ids = cvs.map(cv => cv.id);
+    let experiences = [], education = [], skills = [];
+    if (ids.length) {
+      [experiences] = await pool.query('SELECT * FROM cv_experiences WHERE cv_id IN (?) ORDER BY id', [ids]);
+      [education] = await pool.query('SELECT * FROM cv_education WHERE cv_id IN (?) ORDER BY id', [ids]);
+      [skills] = await pool.query('SELECT * FROM cv_skills WHERE cv_id IN (?) ORDER BY id', [ids]);
+    }
+    const [applications] = await pool.query(
+      'SELECT id, cv_id, company_name, job_title, job_description, match_percentage, created_at FROM job_applications WHERE user_id = ? ORDER BY id',
+      [req.user.id]
+    );
+
+    res.json({
+      exported_at: new Date().toISOString(),
+      account: { email: users[0].email, created_at: users[0].created_at },
+      cvs: cvs.map(cv => ({
+        ...cv,
+        experiences: experiences.filter(e => e.cv_id === cv.id),
+        education: education.filter(e => e.cv_id === cv.id),
+        skills: skills.filter(s => s.cv_id === cv.id)
+      })),
+      applications
+    });
+  } catch (error) {
+    console.error('Error al exportar datos:', error);
+    res.status(500).json({ error: 'No se pudieron exportar los datos.' });
+  }
+};
+
+// Eliminación de la cuenta y de todo lo que cuelga de ella (derecho de supresión).
+// Las cuentas reales deben confirmar con su contraseña; las de demo no tienen una conocida.
+exports.deleteAccount = async (req, res) => {
+  if (!hit(`delete:${req.user.id}`, 5, 15 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Demasiados intentos. Espera unos minutos.' });
+  }
+  try {
+    const [users] = await pool.query('SELECT id, email, password FROM users WHERE id = ?', [req.user.id]);
+    if (users.length === 0) return res.json({ message: 'La cuenta ya estaba eliminada.' });
+
+    const user = users[0];
+    const isDemo = user.email.endsWith(`@${DEMO_DOMAIN}`);
+    if (!isDemo) {
+      const { password } = req.body || {};
+      if (!password || !(await bcrypt.compare(String(password), user.password))) {
+        return res.status(401).json({ error: 'La contraseña no es correcta.' });
+      }
+    }
+
+    // Las claves foráneas con ON DELETE CASCADE borran CVs, experiencias, formación, habilidades,
+    // candidaturas y enlaces de recuperación de contraseña.
+    await pool.query('DELETE FROM users WHERE id = ?', [user.id]);
+    res.json({ message: 'Tu cuenta y todos tus datos se han eliminado.' });
+  } catch (error) {
+    console.error('Error al eliminar la cuenta:', error);
+    res.status(500).json({ error: 'No se pudo eliminar la cuenta.' });
+  }
+};

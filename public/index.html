@@ -65,6 +65,11 @@
             <p class="hint" id="pwHint" hidden>Mínimo 8 caracteres.</p>
           </div>
 
+          <label class="consent" id="consentField" hidden>
+            <input type="checkbox" id="consent">
+            <span>He leído y acepto la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a> y los <a href="/terminos" target="_blank" rel="noopener">términos de uso</a>.</span>
+          </label>
+
           <p id="errorMessage" class="callout is-error" role="alert" hidden></p>
 
           <p id="authOk" class="callout is-ok" role="status" hidden></p>
@@ -74,6 +79,14 @@
           <button type="button" id="forgotLink" class="link-btn">¿Has olvidado tu contraseña?</button>
           <button type="button" id="backLink" class="link-btn" hidden>← Volver a entrar</button>
         </form>
+
+        <p id="demoNotice" class="callout" role="note" hidden>Proyecto de portafolio: no introduzcas datos personales reales. Las cuentas de demo se borran automáticamente a las 24 h.</p>
+
+        <nav class="legal-links" aria-label="Información legal">
+          <a href="/privacidad">Privacidad</a>
+          <a href="/terminos">Términos</a>
+          <a href="/aviso-legal">Aviso legal</a>
+        </nav>
       </div>
     </section>
   </main>

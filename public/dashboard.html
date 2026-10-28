@@ -34,8 +34,10 @@
 
       <div class="rail-foot">
         <button type="button" class="rail-btn" data-theme-toggle><span data-theme-icon></span><span data-theme-label>Modo oscuro</span></button>
+        <a class="rail-btn" href="#cuenta" data-nav="cuenta"><i data-icon="user"></i><span>Mi cuenta</span></a>
         <p class="account" id="accountEmail"></p>
         <button type="button" class="rail-btn" data-logout><i data-icon="logout"></i><span>Cerrar sesión</span></button>
+        <nav class="rail-legal" aria-label="Información legal"><a href="/privacidad" target="_blank" rel="noopener">Privacidad</a><a href="/terminos" target="_blank" rel="noopener">Términos</a><a href="/aviso-legal" target="_blank" rel="noopener">Aviso legal</a></nav>
       </div>
     </aside>
 
@@ -52,6 +54,7 @@
         </a>
         <div class="topbar-tools">
           <button type="button" class="icon-btn" data-theme-toggle><span data-theme-icon></span></button>
+          <a class="icon-btn" href="#cuenta" data-nav="cuenta" aria-label="Mi cuenta"><i data-icon="user"></i></a>
           <button type="button" class="icon-btn" data-logout aria-label="Cerrar sesión"><i data-icon="logout"></i></button>
         </div>
       </header>
@@ -265,6 +268,37 @@
           </div>
 
           <div id="jobsList"></div>
+        </div>
+
+        <!-- ===================== MI CUENTA ===================== -->
+        <div class="page" data-view="cuenta" hidden>
+          <div class="page-head">
+            <div>
+              <h1>Mi cuenta</h1>
+              <p id="accountLede">Descarga tus datos o elimina tu cuenta cuando quieras.</p>
+            </div>
+          </div>
+
+          <section class="sheet account-box">
+            <h2>Descargar mis datos</h2>
+            <p>Un archivo JSON con tu cuenta, tus CV, experiencia, formación, habilidades y candidaturas.</p>
+            <div class="account-actions">
+              <button type="button" class="btn btn-secondary" id="exportDataBtn"><i data-icon="download"></i><span>Descargar mis datos</span></button>
+            </div>
+          </section>
+
+          <section class="sheet account-box account-danger">
+            <h2>Eliminar mi cuenta</h2>
+            <p id="deleteLede">Se borran para siempre tu cuenta, tus CV y tus candidaturas. No se puede deshacer.</p>
+            <div class="field" id="deletePwField" hidden>
+              <label class="label" for="deletePassword">Confirma con tu contraseña</label>
+              <input class="input" id="deletePassword" type="password" autocomplete="current-password">
+            </div>
+            <p id="deleteError" class="callout is-error" role="alert" hidden></p>
+            <div class="account-actions">
+              <button type="button" class="btn btn-danger" id="deleteAccountBtn"><i data-icon="trash"></i><span>Eliminar mi cuenta</span></button>
+            </div>
+          </section>
         </div>
 
       </main>

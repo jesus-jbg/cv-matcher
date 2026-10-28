@@ -1,10 +1,11 @@
-// Navegación entre pantallas con el hash de la URL (#cvs, #analizar, #candidaturas).
+// Navegación entre pantallas con el hash de la URL (#cvs, #analizar, #candidaturas, #cuenta).
 import { $, $$ } from './ui.js';
 
 const VIEWS = {
   cvs: 'Mis CVs',
   analizar: 'Analizar oferta',
-  candidaturas: 'Candidaturas'
+  candidaturas: 'Candidaturas',
+  cuenta: 'Mi cuenta'
 };
 const hooks = {};
 
